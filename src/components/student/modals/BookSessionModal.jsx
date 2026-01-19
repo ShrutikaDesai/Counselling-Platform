@@ -26,14 +26,20 @@ const { Title, Text } = Typography;
 const BookSessionModal = ({ rescheduleData, closeModal }) => {
   const [mode, setMode] = useState("online");
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [selectedCounsellor, setSelectedCounsellor] = useState(null);
+  const [selectedLeadCounsellor, setSelectedLeadCounsellor] = useState(null);
+  const [selectedNormalCounsellor, setSelectedNormalCounsellor] = useState(null);
   const [slotFilter, setSlotFilter] = useState("all");
 
+  const leadCounsellors = [
+    { id: 1, name: "Dr. Ananya Sharma", type: "lead" },
+    { id: 2, name: "Mr. Rahul Verma", type: "lead" },
+    { id: 3, name: "Ms. Priya Singh", type: "lead" },
+  ];
 
-  const counsellors = [
-    { id: 1, name: "Dr. Ananya Sharma" },
-    { id: 2, name: "Mr. Rahul Verma" },
-    { id: 3, name: "Ms. Priya Singh" },
+  const normalCounsellors = [
+    { id: 4, name: "Dr. Vinay Sharma", type: "normal" },
+    { id: 5, name: "Mr. Rohit Verma", type: "normal" },
+    { id: 6, name: "Ms. Riya Singh", type: "normal" },
   ];
 
   const slots = [
@@ -50,15 +56,45 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
     return true;
   });
 
-
   // Prefill for reschedule
   useEffect(() => {
     if (rescheduleData) {
       setMode(rescheduleData.mode);
-      setSelectedCounsellor(rescheduleData.counsellor);
+      if (rescheduleData.counsellorType === "lead") {
+        setSelectedLeadCounsellor(rescheduleData.counsellor);
+      } else if (rescheduleData.counsellorType === "normal") {
+        setSelectedNormalCounsellor(rescheduleData.counsellor);
+      }
       setSelectedSlot(rescheduleData.time);
     }
   }, [rescheduleData]);
+
+  // Get selected counsellor for display
+  const getSelectedCounsellor = () => {
+    if (selectedLeadCounsellor) {
+      return leadCounsellors.find(c => c.name === selectedLeadCounsellor);
+    }
+    if (selectedNormalCounsellor) {
+      return normalCounsellors.find(c => c.name === selectedNormalCounsellor);
+    }
+    return null;
+  };
+
+  const selectedCounsellorData = getSelectedCounsellor();
+
+  // Handle confirm booking
+  const handleConfirm = () => {
+    // Validation: Lead counsellor is required, normal counsellor is optional
+    if (!selectedLeadCounsellor) {
+      // You could add an error message here
+      return;
+    }
+    if (!selectedSlot) {
+      // You could add an error message here
+      return;
+    }
+    closeModal();
+  };
 
   return (
     <div style={{ padding: "16px 12px" }}>
@@ -73,7 +109,6 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
           ? "Update your session date and time"
           : "Select your preferred date, counsellor and time slot"}
       </Text>
-
 
       <Divider />
 
@@ -108,29 +143,52 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
             <Row gutter={[16, 16]}>
               <Col xs={24} md={12}>
                 <Text strong>
-                  <UserOutlined /> Select Counsellor
+                  <UserOutlined /> Select Lead Counsellor *
                 </Text>
                 <Select
-                  placeholder="Choose counsellor"
-                  style={{ width: "100%", marginTop: 12 }}
-                  onChange={(value) => setSelectedCounsellor(value)}
+                  placeholder="Choose lead counsellor"
+                  style={{ width: "100%", marginTop: 8 }}
+                  onChange={(value) => setSelectedLeadCounsellor(value)}
+                  value={selectedLeadCounsellor}
                   allowClear
                 >
-                  {counsellors.map((c) => (
+                  {leadCounsellors.map((c) => (
                     <Select.Option key={c.id} value={c.name}>
                       {c.name}
                     </Select.Option>
                   ))}
                 </Select>
+               
               </Col>
 
               <Col xs={24} md={12}>
                 <Text strong>
-                  <CalendarOutlined /> Select Date
+                  <UserOutlined /> Select Normal Counsellor (Optional)
+                </Text>
+                <Select
+                  placeholder="Choose normal counsellor (optional)"
+                  style={{ width: "100%", marginTop: 8 }}
+                  onChange={(value) => setSelectedNormalCounsellor(value)}
+                  value={selectedNormalCounsellor}
+                  allowClear
+                >
+                  {normalCounsellors.map((c) => (
+                    <Select.Option key={c.id} value={c.name}>
+                      {c.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+                
+              </Col>
+
+              <Col xs={24} md={12}>
+                <Text strong>
+                  <CalendarOutlined /> Select Date *
                 </Text>
                 <DatePicker
-                  style={{ width: "100%", marginTop: 12 }}
+                  style={{ width: "100%", marginTop: 8 }}
                 />
+              
               </Col>
             </Row>
           </Card>
@@ -281,11 +339,38 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
                   <Text strong>Assigned Counsellor</Text>
                   <br />
                   <Text type="secondary">
-                    {selectedCounsellor ||
-                      "Based on availability"}
+                    {selectedCounsellorData?.name || "Not selected"}
                   </Text>
+                  {selectedCounsellorData && (
+                    <div style={{ marginTop: 4 }}>
+                      <Tag 
+                        color={selectedCounsellorData.type === "lead" ? "gold" : "blue"} 
+                        size="small"
+                      >
+                        {selectedCounsellorData.type === "lead" ? "Lead" : "Normal"}
+                      </Tag>
+                    </div>
+                  )}
                 </div>
               </Space>
+
+              {selectedNormalCounsellor && (
+                <Space>
+                  <Avatar size={48} icon={<UserOutlined />} />
+                  <div>
+                    <Text strong>Additional Counsellor</Text>
+                    <br />
+                    <Text type="secondary">
+                      {selectedNormalCounsellor}
+                    </Text>
+                    <div style={{ marginTop: 4 }}>
+                      <Tag color="blue" size="small">
+                        Normal
+                      </Tag>
+                    </div>
+                  </div>
+                </Space>
+              )}
 
               <Divider />
 
@@ -312,12 +397,13 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
               <Button
                 type="primary"
                 block
-                disabled={!selectedSlot || !selectedCounsellor}
-                onClick={closeModal}
+                disabled={!selectedSlot || !selectedLeadCounsellor}
+                onClick={handleConfirm}
               >
                 {rescheduleData ? "Confirm Reschedule" : "Confirm Booking"}
               </Button>
 
+             
             </Space>
           </Card>
         </Col>

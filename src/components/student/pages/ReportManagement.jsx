@@ -192,6 +192,7 @@ const ReportManagement = () => {
       style={{
         padding: "16px",
         minHeight: "100vh",
+        textAlign:"center",
       }}
     >
       <Title level={2}>My Reports</Title>

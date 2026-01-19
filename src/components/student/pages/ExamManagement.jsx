@@ -9,9 +9,6 @@ import {
   Divider,
   Tag,
   Badge,
-  Modal,
-  Steps,
-  Image,
   ConfigProvider,
   theme,
 } from "antd";
@@ -23,39 +20,25 @@ import {
   LockOutlined,
   AppstoreOutlined,
   InfoCircleOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import antdTheme from "../../../theme/antdTheme";
 import StatusTrackingModal from "../modals/StatusTrackingModal";
-
+import InstructionsModal from "../modals/InstructionsModal";
 
 const { Title, Text } = Typography;
 
 const ExamManagement = () => {
-
   const [statusModalVisible, setStatusModalVisible] = useState(false);
-  const [currentStatus] = useState(1);
-  const statusSteps = ["Payment", "Scheduled", "Ongoing", "Completed"];
-  const statusImages = [
-    { alt: "Payment Receipt", src: "https://via.placeholder.com/80?text=Payment" },
-    { alt: "Schedule", src: "https://via.placeholder.com/80?text=Schedule" },
-    { alt: "Ongoing", src: "https://via.placeholder.com/80?text=Ongoing" },
-    { alt: "Result", src: "https://via.placeholder.com/80?text=Result" },
-  ];
-
+  const [instructionsModalVisible, setInstructionsModalVisible] = useState(false);
 
   const { useToken } = theme;
+  
   const PageContent = () => {
     const { token } = useToken();
 
     return (
-      <div
-        style={{
-          // padding: "50px 20px",
-          // background: "linear-gradient(180deg, #f9fafb 0%, #eef2ff 100%)",
-          minHeight: "100vh",
-        }}
-      >
-
+      <div style={{ minHeight: "100vh" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <Title level={2} style={{ marginBottom: 6 }}>
             Career Assessment Test
@@ -65,8 +48,32 @@ const ExamManagement = () => {
           </Text>
         </div>
 
-        {/* Track Status button - top right */}
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        {/* Action Buttons - top right */}
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "flex-end", 
+          gap: 12,
+          marginBottom: 12,
+          flexWrap: "wrap" 
+        }}>
+          <Button
+            type="default"
+            size="large"
+            icon={<QuestionCircleOutlined />}
+            style={{
+              borderRadius: 8,
+              backgroundColor: token.colorPrimary,
+              color: "#fff",
+              fontWeight: "600",
+              border: "none",
+              boxShadow: token.boxShadow,
+              transition: "transform 0.12s ease, box-shadow 0.12s ease",
+            }}
+            onClick={() => setInstructionsModalVisible(true)}
+          >
+            Instructions
+          </Button>
+          
           <Button
             type="default"
             size="large"
@@ -78,7 +85,6 @@ const ExamManagement = () => {
               border: "none",
               boxShadow: token.boxShadow,
               transition: "transform 0.12s ease, box-shadow 0.12s ease",
-              cursor: "pointer",
             }}
             onClick={() => setStatusModalVisible(true)}
           >
@@ -87,43 +93,8 @@ const ExamManagement = () => {
         </div>
 
         <Row gutter={[32, 32]} justify="center">
-          {/* LEFT COLUMN */}
+          {/* LEFT COLUMN - Removed Important Instructions card */}
           <Col xs={24} md={16}>
-
-            <Card
-              style={{
-                borderRadius: 14,
-                borderLeft: "6px solid #1677ff",
-                background: "#ffffff",
-                marginBottom: 28,
-                boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-              }}
-            >
-              <Title level={5}>
-                <SafetyOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
-                Important Instructions
-              </Title>
-
-              <List
-                size="small"
-                dataSource={[
-                  "Exam duration: 60 minutes",
-                  "Total questions: 100 (Multiple Choice)",
-                  "You can save and resume within 24 hours",
-                  "Once submitted, you cannot retake the exam",
-                  "Results will be available after admin approval",
-                ]}
-                renderItem={(item) => (
-                  <List.Item>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <CheckCircleOutlined style={{ color: token.colorSuccess }} />
-                      <Text>{item}</Text>
-                    </div>
-                  </List.Item>
-                )}
-              />
-            </Card>
-
             {/* EXAM SECTIONS */}
             <Title
               level={5}
@@ -292,8 +263,6 @@ const ExamManagement = () => {
                   >
                     Note: This will redirect to an external assessment platform
                   </Text>
-
-
                 </Card>
               </Badge.Ribbon>
             </div>
@@ -303,16 +272,20 @@ const ExamManagement = () => {
     );
   };
 
-
   return (
     <ConfigProvider theme={antdTheme}>
       <PageContent />
-
+      
+      {/* Imported Modals */}
+      <InstructionsModal
+        open={instructionsModalVisible}
+        onClose={() => setInstructionsModalVisible(false)}
+      />
+      
       <StatusTrackingModal
         open={statusModalVisible}
         onClose={() => setStatusModalVisible(false)}
       />
-
     </ConfigProvider>
   );
 };

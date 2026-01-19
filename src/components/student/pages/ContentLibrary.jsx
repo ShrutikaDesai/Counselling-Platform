@@ -115,20 +115,17 @@ const programColors = {
 
 const ContentLibrary = () => {
   const [search, setSearch] = useState("");
-  const [program, setProgram] = useState("All");
   const [type, setType] = useState("All");
-  const [classLevel, setClassLevel] = useState("All");
   const [accessLevel, setAccessLevel] = useState("All"); // ✅ NEW
 
   const filteredData = contentData.filter((item) => {
-    return (
-      item.title.toLowerCase().includes(search.toLowerCase()) &&
-      (program === "All" || item.program === program) &&
-      (type === "All" || item.type === type) &&
-      (classLevel === "All" || item.classLevel === classLevel) &&
-      (accessLevel === "All" || item.accessType === accessLevel) // ✅ NEW
-    );
-  });
+  return (
+    item.title.toLowerCase().includes(search.toLowerCase()) &&
+    (type === "All" || item.type === type) &&
+    (accessLevel === "All" || item.accessType === accessLevel)
+  );
+});
+
 
   const handleView = (item) => {
   if (item.accessType === "Premium") return;
@@ -170,29 +167,7 @@ const handleDownload = (item) => {
           />
         </Col>
 
-        {/* CLASS */}
-        <Col xs={24} sm={12} md={4}>
-          <Select size="large" value={classLevel} onChange={setClassLevel} style={{ width: "100%" }}>
-            <Option value="All">All Classes</Option>
-            <Option value="8">Class 8</Option>
-            <Option value="9">Class 9</Option>
-            <Option value="10">Class 10</Option>
-            <Option value="11">Class 11</Option>
-            <Option value="12">Class 12</Option>
-          </Select>
-        </Col>
-
-        {/* PROGRAM */}
-        <Col xs={24} sm={12} md={4}>
-          <Select size="large" value={program} onChange={setProgram} style={{ width: "100%" }}>
-            <Option value="All">All Programs</Option>
-            <Option value="Engineering">Engineering</Option>
-            <Option value="Medical">Medical</Option>
-            <Option value="Design">Design</Option>
-            <Option value="Commerce">Commerce</Option>
-          </Select>
-        </Col>
-
+  
         {/* TYPE */}
         <Col xs={24} sm={12} md={4}>
           <Select size="large" value={type} onChange={setType} style={{ width: "100%" }}>

@@ -14,6 +14,7 @@ import StudentProfile from "./components/student/pages/StudentProfile";
 import AdminLogin from "./components/AdminLogin";
 import ForgotPassword from "./components/student/pages/ForgotPassword";
 import ResetPassword from "./components/student/pages/ResetPassword";
+import StudentPayments from "./components/student/pages/Payments";
 
 
 const App = () => {
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="slot-booking" element={<SlotBookingList />} />
           <Route path="content-library" element={<ContentLibrary />} />
           <Route path="student-profile" element={<StudentProfile />} />
+          <Route path="payments" element={<StudentPayments />} />
 
           </Route>
 

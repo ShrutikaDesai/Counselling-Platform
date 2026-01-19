@@ -23,6 +23,7 @@ import {
   ScheduleFilled,
   BookFilled,
   BellOutlined,
+  CreditCardFilled,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import antdTheme from "../theme/antdTheme";
@@ -73,6 +74,7 @@ export default function StudentLayout() {
     "/student/freecontent": "Free Content",
     "/student/content-library": "Content Library",
     "/student/student-profile": "Profile",
+    "/student/payments":"Payments"
   };
 
   const pathSnippets = location.pathname.split("/").filter(Boolean);
@@ -148,6 +150,17 @@ export default function StudentLayout() {
       },
       style: { marginBottom: 12 },
     },
+    {
+  key: "/student/payments",
+  icon: <CreditCardFilled />,
+  label: "Payments",
+  onClick: () => {
+    navigate("/student/payments");
+    setDrawerVisible(false);
+  },
+  style: { marginBottom: 12 },
+},
+
   ];
 
   const handleLogout = () => {

@@ -86,7 +86,7 @@ const SlotBookingList = () => {
         }}
       >
         <Col flex="auto">
-          <Title level={3} style={{ margin: 0 }}>
+          <Title level={3} style={{ margin: 0 ,  textAlign:"center", padding: "16px" }}>
             My Counselling Sessions
           </Title>
         </Col>
