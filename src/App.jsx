@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+{/*  Student Dashboard */}
 import StudentLayout from "./layouts/StudentLayout";
 import StudentDashboard from "./components/student/pages/StudentDashboard";
 import StudentRegister from "./components/StudentRegister";
@@ -16,20 +18,25 @@ import ForgotPassword from "./components/student/pages/ForgotPassword";
 import ResetPassword from "./components/student/pages/ResetPassword";
 import StudentPayments from "./components/student/pages/Payments";
 
+{/*  Admin Dashboard */}
+import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./components/admin/pages/AdminDashboard";
+import Enquiry from "./components/admin/pages/Enquiry";
+
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* ✅ PUBLIC ROUTE */}
+        {/*  PUBLIC ROUTE */}
         <Route path="/register" element={<StudentRegister />} />
         <Route path="/" element={<StudentLogin />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />   
         <Route path="/reset-password" element={<ResetPassword />} /> 
 
-        {/* ✅ PROTECTED STUDENT ROUTES */}
+             {/* =================== STUDENT ROUTES ===================== */}
         <Route path="/student" element={<StudentLayout />}>
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="journeysteps" element={<JourneySteps />} />
@@ -41,8 +48,16 @@ const App = () => {
           <Route path="content-library" element={<ContentLibrary />} />
           <Route path="student-profile" element={<StudentProfile />} />
           <Route path="payments" element={<StudentPayments />} />
+        </Route>
 
-          </Route>
+
+           {/* ===================== ADMIN ROUTES ===================== */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="enquiry-leads" element={<Enquiry />} />
+        
+        </Route>
+       
 
       </Routes>
     </BrowserRouter>

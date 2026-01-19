@@ -11,6 +11,7 @@ import {
   Dropdown,
   Space,
   Badge,
+  ConfigProvider,
 } from "antd";
 import {
   UserOutlined,
@@ -210,9 +211,11 @@ export default function StudentLayout() {
   );
 
   return (
+
+  <ConfigProvider theme={antdTheme}>
     <Layout style={{ minHeight: "100vh" }}>
       {/* ===================== FIXED SIDEBAR ===================== */}
-      {!screens.xs && (
+      {!screens.xs && ( 
         <Sider
           width={SIDEBAR_WIDTH}
           style={{
@@ -313,5 +316,6 @@ export default function StudentLayout() {
         </Content>
       </Layout>
     </Layout>
+    </ConfigProvider>
   );
 }

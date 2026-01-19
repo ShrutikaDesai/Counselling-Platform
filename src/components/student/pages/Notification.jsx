@@ -79,13 +79,13 @@ const Notification = ({ notifications, setNotifications }) => {
         ))
       )}
 
-      {notifications.length > 0 && (
+      {/* {notifications.length > 0 && (
         <div style={{ textAlign: "center" }}>
           <Button type="link" onClick={markAllAsRead}>
             Mark all as read
           </Button>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
