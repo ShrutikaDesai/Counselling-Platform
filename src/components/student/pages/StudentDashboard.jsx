@@ -103,7 +103,7 @@ const StudentDashboard = () => {
       {/* ===================== DASHBOARD CARDS ===================== */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={8}>
-          <Card hoverable style={{ borderRadius: 12 }}>
+          <Card hoverable onClick={() => navigate("/student/freecontent")} style={{ borderRadius: 12 }}>
             <Row align="middle" justify="space-between">
               <BookOutlined style={{ fontSize: 26, color: "#52c41a" }} />
               <Badge count="Free" style={{ backgroundColor: "#52c41a" }} />
@@ -118,7 +118,7 @@ const StudentDashboard = () => {
         </Col>
 
         <Col xs={24} sm={12} md={8}>
-          <Card hoverable style={{ borderRadius: 12 }}>
+          <Card hoverable onClick={() => navigate("/student/program")} style={{ borderRadius: 12 }}>
             <ContainerOutlined style={{ fontSize: 26, color: "#7265e6" }} />
             <Title level={5} style={{ marginTop: 16 }}>
               My Program
@@ -130,7 +130,7 @@ const StudentDashboard = () => {
         </Col>
 
         <Col xs={24} sm={12} md={8}>
-          <Card hoverable style={{ borderRadius: 12 }}>
+          <Card hoverable onClick={() => navigate("/student/report-management")} style={{ borderRadius: 12 }}>
             <FileTextOutlined style={{ fontSize: 26, color: "#9254de" }} />
             <Title level={5} style={{ marginTop: 16 }}>
               My Assessment Report

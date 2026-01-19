@@ -7,22 +7,19 @@ import {
   Typography,
   Row,
   Col,
-  Divider,
 } from "antd";
-import {
-  MailOutlined,
-  LockOutlined,
-} from "@ant-design/icons";
+import { MailOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
-const StudentLogin = () => {
+const ForgotPassword = () => {
   const navigate = useNavigate();
 
   const onFinish = (values) => {
-    console.log("Login Values:", values);
-    navigate("/student/dashboard");
+    console.log("Forgot Password Email:", values);
+    // Call forgot password API here
+    navigate("/reset-password"); // next step
   };
 
   return (
@@ -60,7 +57,7 @@ const StudentLogin = () => {
             }}
           >
             <Title style={{ color: "#fff" }}>
-              Welcome Back 🎉
+              Reset Password 🔐
             </Title>
 
             <Text
@@ -69,13 +66,13 @@ const StudentLogin = () => {
                 fontSize: 16,
               }}
             >
-              Login to continue your personalized learning and career journey.
+              Don’t worry! We’ll help you recover your account.
             </Text>
 
             <ul style={{ marginTop: 30, lineHeight: 2 }}>
-              <li>✔ Career Dashboard</li>
-              <li>✔ Book Expert Sessions</li>
-              <li>✔ Track Student Progress</li>
+              <li>✔ Secure password reset</li>
+              <li>✔ Email verification</li>
+              <li>✔ Quick access recovery</li>
             </ul>
           </Col>
 
@@ -90,10 +87,22 @@ const StudentLogin = () => {
               justifyContent: "center",
             }}
           >
-            <Title level={3}>Student Login</Title>
+            <Button
+              type="link"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate("/login")}
+              style={{ paddingLeft: 0 }}
+            >
+              Back to Login
+            </Button>
+
+            <Title level={3} style={{ marginTop: 8 }}>
+              Forgot Password
+            </Title>
 
             <Text type="secondary">
-              Enter your credentials to access your account
+              Enter your registered email address. We’ll send you a password
+              reset link.
             </Text>
 
             <Form
@@ -106,45 +115,15 @@ const StudentLogin = () => {
                 name="email"
                 rules={[
                   { required: true, message: "Please enter your email" },
-                  { type: "email", message: "Enter valid email" },
+                  { type: "email", message: "Enter a valid email" },
                 ]}
               >
                 <Input
                   prefix={<MailOutlined />}
                   size="large"
+                  placeholder="example@email.com"
                 />
               </Form.Item>
-
-              <Form.Item
-                label="Password"
-                name="password"
-                rules={[
-                  { required: true, message: "Please enter your password" },
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="********"
-                  size="large"
-                />
-              </Form.Item>
-
-              {/* Forgot password */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  marginBottom: 16,
-                }}
-              >
-                <Text
-                  type="primary"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate("/forgot-password")}
-                >
-                  Forgot Password?
-                </Text>
-              </div>
 
               <Button
                 type="primary"
@@ -155,26 +134,11 @@ const StudentLogin = () => {
                   borderRadius: 30,
                   height: 48,
                   fontSize: 16,
+                  marginTop: 10,
                 }}
               >
-                Login
+                Send Reset Link
               </Button>
-
-              <Divider />
-
-              <Text style={{ textAlign: "center", display: "block" }}>
-                Don’t have an account?{" "}
-                <Text
-                  type="primary"
-                  style={{
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                  }}
-                  onClick={() => navigate("/register")}
-                >
-                  Register
-                </Text>
-              </Text>
             </Form>
           </Col>
         </Row>
@@ -183,4 +147,4 @@ const StudentLogin = () => {
   );
 };
 
-export default StudentLogin;
+export default ForgotPassword;

@@ -12,7 +12,8 @@ import SlotBookingList from "./components/student/pages/SlotBookingList";
 import ContentLibrary from "./components/student/pages/ContentLibrary";
 import StudentProfile from "./components/student/pages/StudentProfile";
 import AdminLogin from "./components/AdminLogin";
-
+import ForgotPassword from "./components/student/pages/ForgotPassword";
+import ResetPassword from "./components/student/pages/ResetPassword";
 
 
 const App = () => {
@@ -22,8 +23,10 @@ const App = () => {
 
         {/* ✅ PUBLIC ROUTE */}
         <Route path="/register" element={<StudentRegister />} />
-        <Route path="/login" element={<StudentLogin />} />
+        <Route path="/" element={<StudentLogin />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />   
+        <Route path="/reset-password" element={<ResetPassword />} /> 
 
         {/* ✅ PROTECTED STUDENT ROUTES */}
         <Route path="/student" element={<StudentLayout />}>

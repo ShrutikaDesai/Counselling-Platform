@@ -7,22 +7,21 @@ import {
   Typography,
   Row,
   Col,
-  Divider,
 } from "antd";
 import {
-  MailOutlined,
   LockOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
-const StudentLogin = () => {
+const ResetPassword = () => {
   const navigate = useNavigate();
 
   const onFinish = (values) => {
-    console.log("Login Values:", values);
-    navigate("/student/dashboard");
+    console.log("Reset Password Values:", values);
+    navigate("/reset-password-success"); // or error page
   };
 
   return (
@@ -46,7 +45,7 @@ const StudentLogin = () => {
         }}
       >
         <Row>
-          {/* LEFT PANEL – Hidden on Mobile */}
+          {/* LEFT PANEL (Hidden on Mobile) */}
           <Col
             xs={0}
             md={10}
@@ -60,7 +59,7 @@ const StudentLogin = () => {
             }}
           >
             <Title style={{ color: "#fff" }}>
-              Welcome Back 🎉
+              Create New Password 🔐
             </Title>
 
             <Text
@@ -69,13 +68,13 @@ const StudentLogin = () => {
                 fontSize: 16,
               }}
             >
-              Login to continue your personalized learning and career journey.
+              Set a strong password to keep your account secure.
             </Text>
 
             <ul style={{ marginTop: 30, lineHeight: 2 }}>
-              <li>✔ Career Dashboard</li>
-              <li>✔ Book Expert Sessions</li>
-              <li>✔ Track Student Progress</li>
+              <li>✔ Minimum 8 characters</li>
+              <li>✔ One uppercase letter</li>
+              <li>✔ One number & symbol</li>
             </ul>
           </Col>
 
@@ -90,10 +89,21 @@ const StudentLogin = () => {
               justifyContent: "center",
             }}
           >
-            <Title level={3}>Student Login</Title>
+            <Button
+              type="link"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate("/login")}
+              style={{ paddingLeft: 0 }}
+            >
+              Back to Login
+            </Button>
+
+            <Title level={3} style={{ marginTop: 8 }}>
+              Reset Password
+            </Title>
 
             <Text type="secondary">
-              Enter your credentials to access your account
+              Enter your new password and confirm it below.
             </Text>
 
             <Form
@@ -102,49 +112,49 @@ const StudentLogin = () => {
               style={{ marginTop: 24 }}
             >
               <Form.Item
-                label="Email Address"
-                name="email"
+                label="New Password"
+                name="password"
                 rules={[
-                  { required: true, message: "Please enter your email" },
-                  { type: "email", message: "Enter valid email" },
+                  { required: true, message: "Please enter new password" },
+                  {
+                    min: 8,
+                    message: "Password must be at least 8 characters",
+                  },
                 ]}
+                hasFeedback
               >
-                <Input
-                  prefix={<MailOutlined />}
+                <Input.Password
+                  prefix={<LockOutlined />}
                   size="large"
+                  placeholder="********"
                 />
               </Form.Item>
 
               <Form.Item
-                label="Password"
-                name="password"
+                label="Confirm Password"
+                name="confirmPassword"
+                dependencies={["password"]}
+                hasFeedback
                 rules={[
-                  { required: true, message: "Please enter your password" },
+                  { required: true, message: "Please confirm password" },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue("password") === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(
+                        new Error("Passwords do not match")
+                      );
+                    },
+                  }),
                 ]}
               >
                 <Input.Password
                   prefix={<LockOutlined />}
-                  placeholder="********"
                   size="large"
+                  placeholder="********"
                 />
               </Form.Item>
-
-              {/* Forgot password */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  marginBottom: 16,
-                }}
-              >
-                <Text
-                  type="primary"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate("/forgot-password")}
-                >
-                  Forgot Password?
-                </Text>
-              </div>
 
               <Button
                 type="primary"
@@ -155,26 +165,11 @@ const StudentLogin = () => {
                   borderRadius: 30,
                   height: 48,
                   fontSize: 16,
+                  marginTop: 10,
                 }}
               >
-                Login
+                Update Password
               </Button>
-
-              <Divider />
-
-              <Text style={{ textAlign: "center", display: "block" }}>
-                Don’t have an account?{" "}
-                <Text
-                  type="primary"
-                  style={{
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                  }}
-                  onClick={() => navigate("/register")}
-                >
-                  Register
-                </Text>
-              </Text>
             </Form>
           </Col>
         </Row>
@@ -183,4 +178,4 @@ const StudentLogin = () => {
   );
 };
 
-export default StudentLogin;
+export default ResetPassword;

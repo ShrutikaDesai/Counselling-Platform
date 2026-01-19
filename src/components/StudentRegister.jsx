@@ -54,14 +54,16 @@ const StudentRegister = () => {
         <Row>
           {/* LEFT SIDE */}
           <Col
-            xs={0}
+            xs={24}
             md={10}
             style={{
               background: "linear-gradient(180deg,#5f72ff,#9b23ea)",
               color: "#fff",
-              padding: "60px 40px",
+              padding: "60px 12px",
+              textAlign: "center",
             }}
           >
+
             <Title style={{ color: "#fff" }}>
               Start Your Learning Journey 🎓
             </Title>
@@ -70,13 +72,21 @@ const StudentRegister = () => {
               Register now to explore personalized career guidance, expert
               mentoring, and smart assessments designed for students.
             </Text>
-
-            <ul style={{ marginTop: 30, lineHeight: 2 }}>
-              <li>✔ Career Assessment</li>
-              <li>✔ Expert Counselling</li>
+            <ul
+              style={{
+                marginTop: 20,
+                paddingLeft: 60,
+                //  justifyContent: "center",
+                listStyle: "none",
+                lineHeight: "26px",
+                textAlign: "left",
+              }}
+            >
+              <li style={{ marginBottom: 8 }}>✔ Career Assessment</li>
+              <li style={{ marginBottom: 8 }}>✔ Expert Counselling</li>
               <li>✔ Progress Tracking</li>
-              {/* <li>✔ Parent Dashboard</li> */}
             </ul>
+
           </Col>
 
           {/* RIGHT SIDE – FORM */}
@@ -130,7 +140,7 @@ const StudentRegister = () => {
                   <Form.Item
                     label="Mobile Number (Optional)"
                     name="mobile"
-                    // rules={[{ required: true }]}
+                  // rules={[{ required: true }]}
                   >
                     <Input prefix={<PhoneOutlined />} />
                   </Form.Item>
@@ -164,7 +174,7 @@ const StudentRegister = () => {
               </Row>
 
               {/* ✅ CITY FIELD */}
-            
+
 
               <Divider orientation="left">Parent Details</Divider>
 
@@ -192,9 +202,9 @@ const StudentRegister = () => {
                     <Input prefix={<MailOutlined />} />
                   </Form.Item>
                 </Col>
-                
+
               </Row>
-  <Form.Item
+              <Form.Item
                 label="City"
                 name="city"
                 rules={[{ required: true }]}
@@ -240,7 +250,7 @@ const StudentRegister = () => {
                 </Checkbox>
               </Form.Item> */}
 
-              
+
 
               <Button
                 type="primary"
@@ -256,24 +266,24 @@ const StudentRegister = () => {
                 Create Account
               </Button>
 
-                  <Divider />
+              <Divider />
 
-               <Text style={{ display: "block", textAlign: "center" }}>
+              <Text style={{ display: "block", textAlign: "center" }}>
                 Have an account? {" "}
                 <Text
                   type="primary"
-                   style={{
-                   cursor: "pointer",
-                   color: "#1890ff",       
-                   textDecoration: "underline",
-                    }}
-                  onClick={() => navigate("/")}
+                  style={{
+                    cursor: "pointer",
+                    color: "#1890ff",
+                    textDecoration: "underline",
+                  }}
+                  onClick={() => navigate("/login")}
                 >
-                   Login
+                  Login
                 </Text>
               </Text>
 
-              
+
             </Form>
           </Col>
         </Row>
