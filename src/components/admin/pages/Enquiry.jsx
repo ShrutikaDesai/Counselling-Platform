@@ -14,13 +14,14 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import adminTheme from "../../../theme/adminTheme";
-import { SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import AddEnquiryModal from "../modals/AddEnquiryModal";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const Enquiry = () => {
-
+  // ---------------- DATA ----------------
   const enquiriesData = [
     {
       key: 1,
@@ -64,7 +65,7 @@ const Enquiry = () => {
     },
   ];
 
-
+  // ---------------- COLORS ----------------
   const sourceColorMap = {
     Website: adminTheme.token.colorPrimary,
     WhatsApp: adminTheme.token.colorSuccess,
@@ -72,13 +73,18 @@ const Enquiry = () => {
     "Walk-In": adminTheme.token.colorInfo,
   };
 
+  // ---------------- STATES ----------------
   const [searchText, setSearchText] = useState("");
- const [statusFilter, setStatusFilter] = useState(null);
-const [sourceFilter, setSourceFilter] = useState(null);
-
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [statusFilter, setStatusFilter] = useState(null);
+  const [sourceFilter, setSourceFilter] = useState(null);
   const [dateFilter, setDateFilter] = useState(null);
 
+  // 🔥 NEW STATES (FOR CONVERT)
+  const [modalMode, setModalMode] = useState("add"); // add | convert
+  const [selectedEnquiry, setSelectedEnquiry] = useState(null);
 
+  // ---------------- FILTER LOGIC ----------------
   const filteredEnquiries = enquiriesData.filter((enquiry) => {
     const matchesSearch =
       enquiry.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -105,6 +111,7 @@ const [sourceFilter, setSourceFilter] = useState(null);
     );
   });
 
+  // ---------------- TABLE COLUMNS ----------------
   const columns = [
     {
       title: "Name",
@@ -163,12 +170,17 @@ const [sourceFilter, setSourceFilter] = useState(null);
     {
       title: "Action",
       key: "action",
-      render: () => (
+      render: (_, record) => (
         <Button
           type="primary"
           style={{
             borderRadius: adminTheme.token.borderRadius,
             backgroundColor: adminTheme.token.colorPrimary,
+          }}
+          onClick={() => {
+            setModalMode("convert");
+            setSelectedEnquiry(record);
+            setOpenAddModal(true);
           }}
         >
           Convert to User
@@ -177,73 +189,107 @@ const [sourceFilter, setSourceFilter] = useState(null);
     },
   ];
 
+  // ---------------- JSX ----------------
   return (
-    <div style={{ padding: 16 }}>
+    <div style={{ padding: 1 }}>
       {/* Header */}
-      <Space direction="vertical" size="small">
-        <Title level={3}>Enquiry & Leads</Title>
-       
-      </Space>
+      <Row justify="space-between" align="middle">
+        <Col>
+          <Space direction="vertical" size={0}>
+            <Title level={3} style={{ marginBottom: 0 }}>
+              Enquiry & Leads
+            </Title>
+          </Space>
+        </Col>
+
+        <Col>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            style={{
+              borderRadius: adminTheme.token.borderRadius,
+              backgroundColor: adminTheme.token.colorPrimary,
+            }}
+            onClick={() => {
+              setModalMode("add");
+              setSelectedEnquiry(null);
+              setOpenAddModal(true);
+            }}
+          >
+            Add Enquiry
+          </Button>
+        </Col>
+      </Row>
 
       {/* Filters */}
       <Card
         style={{
-          marginTop: 16,
+          marginTop:30,
           borderRadius: adminTheme.token.borderRadius,
           boxShadow: adminTheme.token.boxShadow,
         }}
       >
-        <Row gutter={[16, 16]}>
-        <Col xs={24} md={6}>
-  <Input
-    prefix={<SearchOutlined style={{ color: adminTheme.token.colorTextSecondary }} />}
-    placeholder="Search..."
-    value={searchText}
-    onChange={(e) => setSearchText(e.target.value)}
-    allowClear
-  />
-</Col>
+      <Row gutter={[16, 16]} align="middle">
+  {/* Search - LEFT */}
+  <Col xs={24} md={11}>
+    <Input
+      prefix={
+        <SearchOutlined
+          style={{ color: adminTheme.token.colorTextSecondary }}
+        />
+      }
+      placeholder="Search..."
+      value={searchText}
+      onChange={(e) => setSearchText(e.target.value)}
+      allowClear
+       />
+  </Col>
 
+  {/* Filters - RIGHT */}
+  <Col xs={24} md={12}>
+    <Row gutter={[16, 16]} justify="end">
+      <Col xs={12} md={6}>
+        <Select
+          placeholder="Status"
+          value={statusFilter}
+          onChange={setStatusFilter}
+          allowClear
+          style={{ width: "100%" }}
+        >
+          <Option value="New">New</Option>
+          <Option value="Contacted">Contacted</Option>
+          <Option value="Converted">Converted</Option>
+        </Select>
+      </Col>
 
-          <Col xs={12} md={4}>
-            <Select
-              placeholder="Status"
-              value={statusFilter}
-              onChange={setStatusFilter}
-              allowClear
-              style={{ width: "100%" }}
-            >
-              <Option value="New">New</Option>
-              <Option value="Contacted">Contacted</Option>
-              <Option value="Converted">Converted</Option>
-            </Select>
-          </Col>
+      <Col xs={12} md={6}>
+        <Select
+          placeholder="Source"
+          value={sourceFilter}
+          onChange={setSourceFilter}
+          allowClear
+          style={{ width: "100%" }}
+        >
+          <Option value="Website">Website</Option>
+          <Option value="WhatsApp">WhatsApp</Option>
+          <Option value="Call">Call</Option>
+          <Option value="Walk-In">Walk-In</Option>
+        </Select>
+      </Col>
 
-          <Col xs={12} md={4}>
-            <Select
-              placeholder="Source"
-              value={sourceFilter}
-              onChange={setSourceFilter}
-              allowClear
-              style={{ width: "100%" }}
-            >
-              <Option value="Website">Website</Option>
-              <Option value="WhatsApp">WhatsApp</Option>
-              <Option value="Call">Call</Option>
-              <Option value="Walk-In">Walk-In</Option>
-            </Select>
-          </Col>
+      <Col xs={24} md={6}>
+        <DatePicker
+          placeholder="Filter by Date"
+          value={dateFilter}
+          onChange={(date) => setDateFilter(date)}
+          style={{ width: "100%" }}
+          allowClear
+        />
+      </Col>
+    </Row>
+  </Col>
+</Row>
 
-          <Col xs={24} md={6}>
-            <DatePicker
-              placeholder="Filter by Date"
-              value={dateFilter}
-              onChange={(date) => setDateFilter(date)}
-              style={{ width: "100%" }}
-              allowClear
-            />
-          </Col>
-        </Row>
 
         {/* Table */}
         <Table
@@ -256,12 +302,20 @@ const [sourceFilter, setSourceFilter] = useState(null);
         />
       </Card>
 
-      {/* Hover Effect */}
+      {/* Hover Effect (UNCHANGED) */}
       <style jsx>{`
         .enquiry-row:hover {
           background-color: ${adminTheme.components.Table.rowHoverBg};
         }
       `}</style>
+
+      {/* SAME MODAL FOR ADD + CONVERT */}
+      <AddEnquiryModal
+        open={openAddModal}
+        onCancel={() => setOpenAddModal(false)}
+        mode={modalMode}
+        enquiryData={selectedEnquiry}
+      />
     </div>
   );
 };

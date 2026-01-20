@@ -22,6 +22,10 @@ import StudentPayments from "./components/student/pages/Payments";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./components/admin/pages/AdminDashboard";
 import Enquiry from "./components/admin/pages/Enquiry";
+import UserList from "./components/admin/pages/UserList";
+import Programs from "./components/admin/pages/Programs";
+import Reports from "./components/admin/pages/Reports";
+
 
 
 const App = () => {
@@ -55,6 +59,9 @@ const App = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="enquiry-leads" element={<Enquiry />} />
+          <Route path="users" element={<UserList />} />
+          <Route path="programs" element={<Programs />} />
+          <Route path="reports" element={<Reports />} />
         
         </Route>
        

@@ -80,7 +80,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div style={{ padding: 16, minHeight: "100vh" }}>
+    <div style={{ padding: 1, minHeight: "100vh" }}>
       <Title level={3} style={{ color: adminTheme.token.colorTextBase }}>Dashboard</Title>
       {/* <Text style={{ color: adminTheme.token.colorTextSecondary }}>
         Welcome back! Here's what's happening today.

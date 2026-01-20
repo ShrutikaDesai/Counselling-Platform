@@ -57,6 +57,7 @@ const AdminLayout = () => {
   const breadcrumbNameMap = {
     "/admin/dashboard": "Dashboard",
     "/admin/enquiry": "Enquiry & Leads",
+    "/admin/users": "Users",
     "/admin/programs": "Programs",
     "/admin/exams": "Exams",
     "/admin/reports": "Reports",
@@ -100,6 +101,16 @@ const AdminLayout = () => {
     },
     style: { marginBottom: 12 },
   },
+   {
+    key: "/admin/users",
+    icon: <TeamOutlined />,   // 👈 Users icon
+    label: "Users",
+    onClick: () => {
+      navigate("/admin/users");
+      setDrawerVisible(false);
+    },
+    style: { marginBottom: 12 },
+  },
     {
       key: "/admin/programs",
       icon: <BookFilled />,
@@ -110,16 +121,16 @@ const AdminLayout = () => {
       },
       style: { marginBottom: 12 },
     },
-    {
-      key: "/admin/exams",
-      icon: <CalendarFilled />,
-      label: "Exams",
-      onClick: () => {
-        navigate("/admin/exams");
-        setDrawerVisible(false);
-      },
-      style: { marginBottom: 12 },
-    },
+    // {
+    //   key: "/admin/exams",
+    //   icon: <CalendarFilled />,
+    //   label: "Exams",
+    //   onClick: () => {
+    //     navigate("/admin/exams");
+    //     setDrawerVisible(false);
+    //   },
+    //   style: { marginBottom: 12 },
+    // },
     {
       key: "/admin/reports",
       icon: <FileTextFilled />,
@@ -130,26 +141,26 @@ const AdminLayout = () => {
       },
       style: { marginBottom: 12 },
     },
-    {
-      key: "/admin/payments",
-      icon: <CreditCardFilled />,
-      label: "Payments",
-      onClick: () => {
-        navigate("/admin/payments");
-        setDrawerVisible(false);
-      },
-      style: { marginBottom: 12 },
-    },
-    {
-      key: "/admin/settings",
-      icon: <SettingFilled />,
-      label: "Settings",
-      onClick: () => {
-        navigate("/admin/settings");
-        setDrawerVisible(false);
-      },
-      style: { marginBottom: 12 },
-    },
+    // {
+    //   key: "/admin/payments",
+    //   icon: <CreditCardFilled />,
+    //   label: "Payments",
+    //   onClick: () => {
+    //     navigate("/admin/payments");
+    //     setDrawerVisible(false);
+    //   },
+    //   style: { marginBottom: 12 },
+    // },
+    // {
+    //   key: "/admin/settings",
+    //   icon: <SettingFilled />,
+    //   label: "Settings",
+    //   onClick: () => {
+    //     navigate("/admin/settings");
+    //     setDrawerVisible(false);
+    //   },
+    //   style: { marginBottom: 12 },
+    // },
   ];
 
   /* ===================== LOGOUT ===================== */
