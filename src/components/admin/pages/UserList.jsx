@@ -87,6 +87,11 @@ const UserList = () => {
   });
 
   const columns = [
+      {
+    title: "Sr. No",
+    key: "srno",
+    render: (_, __, index) => index + 1,
+  },
     {
       title: "Name",
       key: "name",

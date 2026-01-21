@@ -24,7 +24,9 @@ import AdminDashboard from "./components/admin/pages/AdminDashboard";
 import Enquiry from "./components/admin/pages/Enquiry";
 import UserList from "./components/admin/pages/UserList";
 import Programs from "./components/admin/pages/Programs";
-import Reports from "./components/admin/pages/Reports";
+import ReportsManagement from "./components/admin/pages/ReportsManagement";
+import PaymentManagement from "./components/admin/pages/PaymentManagement";
+
 
 
 
@@ -61,7 +63,8 @@ const App = () => {
           <Route path="enquiry-leads" element={<Enquiry />} />
           <Route path="users" element={<UserList />} />
           <Route path="programs" element={<Programs />} />
-          <Route path="reports" element={<Reports />} />
+          <Route path="reportsManagement" element={<ReportsManagement />} />
+          <Route path="paymentManagement" element={<PaymentManagement />} />
         
         </Route>
        

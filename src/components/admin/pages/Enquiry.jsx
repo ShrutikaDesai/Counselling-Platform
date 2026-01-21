@@ -113,6 +113,12 @@ const Enquiry = () => {
 
   // ---------------- TABLE COLUMNS ----------------
   const columns = [
+     {
+    title: "Sr. No",
+    key: "srno",
+    render: (_, __, index) => index + 1, // auto serial number
+    responsive: ["xs", "sm", "md", "lg", "xl"],
+  },
     {
       title: "Name",
       dataIndex: "name",

@@ -40,6 +40,11 @@ const Programs = () => {
   ];
 
   const programColumns = [
+     {
+    title: "Sr. No",
+    key: "srno",
+    render: (_, __, index) => index + 1,
+  },
     { title: "Program Name", dataIndex: "name", render: (text) => <Text strong>{text}</Text> },
     { title: "Duration", dataIndex: "duration" },
     { title: "Sessions", dataIndex: "sessions" },
@@ -63,6 +68,11 @@ const Programs = () => {
   ];
 
   const packageColumns = [
+      {
+    title: "Sr. No",
+    key: "srno",
+    render: (_, __, index) => index + 1,
+  },
     { title: "Package Name", dataIndex: "name", render: (text) => <Text strong>{text}</Text> },
     { title: "Program", dataIndex: "program" },
     { title: "Price", dataIndex: "price" },

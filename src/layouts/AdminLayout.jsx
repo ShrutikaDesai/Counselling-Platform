@@ -60,8 +60,8 @@ const AdminLayout = () => {
     "/admin/users": "Users",
     "/admin/programs": "Programs",
     "/admin/exams": "Exams",
-    "/admin/reports": "Reports",
-    "/admin/payments": "Payments",
+    "/admin/reportsmanagement": "Report Management",
+    "/admin/paymentmanagement": "Payment Management",
     "/admin/settings": "Settings",
   };
 
@@ -103,7 +103,7 @@ const AdminLayout = () => {
   },
    {
     key: "/admin/users",
-    icon: <TeamOutlined />,   // 👈 Users icon
+    icon: <TeamOutlined />,   
     label: "Users",
     onClick: () => {
       navigate("/admin/users");
@@ -114,9 +114,20 @@ const AdminLayout = () => {
     {
       key: "/admin/programs",
       icon: <BookFilled />,
-      label: "Programs",
+      label: "Program & Packages",
       onClick: () => {
         navigate("/admin/programs");
+        setDrawerVisible(false);
+      },
+      style: { marginBottom: 12 },
+    },
+
+      {
+      key: "/admin/paymentmanagement",
+      icon: <CreditCardFilled />,
+      label: "Payments",
+      onClick: () => {
+        navigate("/admin/paymentmanagement");
         setDrawerVisible(false);
       },
       style: { marginBottom: 12 },
@@ -132,25 +143,16 @@ const AdminLayout = () => {
     //   style: { marginBottom: 12 },
     // },
     {
-      key: "/admin/reports",
+      key: "/admin/reportsmanagement",
       icon: <FileTextFilled />,
-      label: "Reports",
+      label: "Report Management",
       onClick: () => {
-        navigate("/admin/reports");
+        navigate("/admin/reportsmanagement");
         setDrawerVisible(false);
       },
       style: { marginBottom: 12 },
     },
-    // {
-    //   key: "/admin/payments",
-    //   icon: <CreditCardFilled />,
-    //   label: "Payments",
-    //   onClick: () => {
-    //     navigate("/admin/payments");
-    //     setDrawerVisible(false);
-    //   },
-    //   style: { marginBottom: 12 },
-    // },
+  
     // {
     //   key: "/admin/settings",
     //   icon: <SettingFilled />,
