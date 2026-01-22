@@ -206,13 +206,10 @@ const CreateSlot = () => {
 
           <Button
             size="large"
+            type="primary"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            style={{
-              backgroundColor: "#FFD700",
-              color: "#000",
-              border: "none",
-            }}
+           
           >
             Edit
           </Button>
