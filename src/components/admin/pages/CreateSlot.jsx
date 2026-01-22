@@ -10,28 +10,39 @@ import {
   Button,
   Input,
   DatePicker,
-  Grid,
+  Row,
+  Col,
+  Select,
 } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
 import CreateSlotModal from "../modals/CreateSlotModal";
 import dayjs from "dayjs";
 
 const { token } = adminTheme;
-const { useBreakpoint } = Grid;
+const { Title, Text } = Typography;
+const { Option } = Select;
 
-const counsellors = [
+const counsellorsMaster = [
   { id: 1, name: "Dr. Ramesh Gupta" },
   { id: 2, name: "Ms. Priya Menon" },
   { id: 3, name: "Dr. Neha Sharma" },
 ];
 
 const CreateSlot = () => {
-  const screens = useBreakpoint();
   const [slots, setSlots] = useState([
     {
       key: 1,
-      counsellor: "Dr. Ramesh Gupta",
+      counsellors: [
+        { name: "Dr. Ramesh Gupta", type: "lead" },
+        { name: "Ms. Priya Menon", type: "normal" },
+      ],
       date: "2026-01-25",
       time: "10:00 AM",
       mode: "Online",
@@ -40,23 +51,46 @@ const CreateSlot = () => {
     },
     {
       key: 2,
-      counsellor: "Ms. Priya Menon",
-      date: "2026-01-26",
-      time: "11:00 AM",
-      mode: "Offline",
-      duration: 45,
+      counsellors: [{ name: "Dr. Radha Patil", type: "lead" }],
+      date: "2026-07-25",
+      time: "10:00 AM",
+      mode: "Online",
+      duration: 60,
+      status: "Available",
+    },
+    {
+      key: 3,
+      counsellors: [
+        { name: "Dr. Rama Patil", type: "lead" },
+        { name: "Ms. Supriya Patil", type: "normal" },
+      ],
+      date: "2026-09-25",
+      time: "10:00 AM",
+      mode: "Online",
+      duration: 60,
       status: "Available",
     },
   ]);
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingSlot, setEditingSlot] = useState(null);
+  const [modalMode, setModalMode] = useState("create");
   const [searchText, setSearchText] = useState("");
   const [filterDate, setFilterDate] = useState(null);
+  const [filterMode, setFilterMode] = useState(null);
 
   const handleCreate = (values) => {
-    const newSlot = {
-      key: Date.now(),
-      counsellor: counsellors.find((c) => c.id === values.counsellor)?.name,
+    const lead = counsellorsMaster.find((c) => c.id === values.leadCounsellor);
+    const normal = counsellorsMaster.find(
+      (c) => c.id === values.normalCounsellor
+    );
+
+    const counsellors = [];
+    if (lead) counsellors.push({ name: lead.name, type: "lead" });
+    if (normal) counsellors.push({ name: normal.name, type: "normal" });
+
+    const slotData = {
+      counsellors,
       date: values.date.format("YYYY-MM-DD"),
       time: values.time.format("hh:mm A"),
       mode: values.mode,
@@ -64,13 +98,33 @@ const CreateSlot = () => {
       status: "Available",
     };
 
-    setSlots((prev) => [newSlot, ...prev]);
+    if (modalMode === "edit" && editingSlot) {
+      setSlots((prev) =>
+        prev.map((slot) =>
+          slot.key === editingSlot.key ? { ...slot, ...slotData } : slot
+        )
+      );
+      message.success("Slot updated successfully!");
+    } else {
+      setSlots((prev) => [{ key: Date.now(), ...slotData }, ...prev]);
+      message.success("Slot created successfully!");
+    }
+
     setModalOpen(false);
-    message.success("Slot created successfully!");
+    setEditingSlot(null);
+    setModalMode("create");
   };
 
   const handleEdit = (record) => {
-    message.info(`Edit clicked for ${record.counsellor}`);
+    setEditingSlot(record);
+    setModalMode("edit");
+    setModalOpen(true);
+  };
+
+  const handleView = (record) => {
+    setEditingSlot(record);
+    setModalMode("view");
+    setModalOpen(true);
   };
 
   const handleDelete = (key) => {
@@ -78,67 +132,96 @@ const CreateSlot = () => {
     message.success("Slot deleted successfully!");
   };
 
-  // Filter slots based on search text and date
   const filteredSlots = slots.filter((slot) => {
     const search = searchText.toLowerCase();
-    const matchesSearch =
-      slot.counsellor.toLowerCase().includes(search) ||
+    const counsellorMatch = slot.counsellors?.some((c) =>
+      c.name.toLowerCase().includes(search)
+    );
+
+    const matchesOther =
       slot.date.toLowerCase().includes(search) ||
       slot.time.toLowerCase().includes(search) ||
-      slot.mode.toLowerCase().includes(search) ||
-      slot.duration.toString().includes(search) ||
-      slot.status.toLowerCase().includes(search);
+      slot.mode.toLowerCase().includes(search);
 
     const matchesDate = filterDate
       ? slot.date === dayjs(filterDate).format("YYYY-MM-DD")
       : true;
 
-    return matchesSearch && matchesDate;
+    const matchesMode = filterMode ? slot.mode === filterMode : true;
+
+    return (counsellorMatch || matchesOther) && matchesDate && matchesMode;
   });
 
   const columns = [
-    { title: "Sr. No.", key: "sr", width: 60, render: (_, __, index) => index + 1 },
-    { title: "Counsellor", dataIndex: "counsellor" },
-    { title: "Date", dataIndex: "date" },
-    { title: "Time", dataIndex: "time" },
+    {
+      title: "Sr. No.",
+      render: (_, __, index) => index + 1,
+      responsive: ["xs", "sm", "md", "lg", "xl"],
+    },
+    {
+      title: "Counsellors",
+      render: (_, record) =>
+        record.counsellors?.length ? (
+          record.counsellors.map((c, i) => (
+            <div key={i}>
+              <Text strong>{c.name}</Text>
+              <br />
+              <Tag color={c.type === "lead" ? "blue" : "default"}>
+                {c.type === "lead" ? "Lead" : "Normal"}
+              </Tag>
+            </div>
+          ))
+        ) : (
+          <Text type="secondary">Not assigned</Text>
+        ),
+      responsive: ["xs", "sm", "md", "lg", "xl"],
+    },
+    {
+      title: "Date & Time",
+      render: (_, r) => (
+        <>
+          {r.date} <br />
+          {r.time} ({r.duration} mins)
+        </>
+      ),
+      responsive: ["xs", "sm", "md", "lg", "xl"],
+    },
     {
       title: "Mode",
       dataIndex: "mode",
-      render: (mode) =>
-        mode === "Online" ? <Tag color="blue">Online</Tag> : <Tag>Offline</Tag>,
-    },
-    {
-      title: "Duration",
-      dataIndex: "duration",
-      render: (d) => `${d} mins`,
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      render: (status) => <Tag color={status === "Available" ? "green" : "red"}>{status}</Tag>,
+      render: (m) => <Tag>{m}</Tag>,
+      responsive: ["sm", "md", "lg", "xl"],
     },
     {
       title: "Actions",
       render: (_, record) => (
-        <Space direction={screens.xs ? "vertical" : "horizontal"}>
+        <Space wrap>
           <Button
-            size="small"
+            size="large"
+            icon={<EyeOutlined />}
+            onClick={() => handleView(record)}
+          >
+            View
+          </Button>
+
+          <Button
+            size="large"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            style={{ width: screens.xs ? "100%" : "auto" }}
+            style={{
+              backgroundColor: "#FFD700",
+              color: "#000",
+              border: "none",
+            }}
           >
             Edit
           </Button>
+
           <Popconfirm
             title="Delete this slot?"
             onConfirm={() => handleDelete(record.key)}
           >
-            <Button
-              size="small"
-              danger
-              icon={<DeleteOutlined />}
-              style={{ width: screens.xs ? "100%" : "auto" }}
-            >
+            <Button size="large" danger icon={<DeleteOutlined />}>
               Delete
             </Button>
           </Popconfirm>
@@ -148,59 +231,79 @@ const CreateSlot = () => {
   ];
 
   return (
-    <div style={{ fontFamily: token.fontFamily, padding: screens.md ? 24 : 12 }}>
-      <Card
-        title="Manage Counselling Slots"
-        style={{
-          borderRadius: token.borderRadius,
-          boxShadow: token.boxShadow,
-        }}
-      >
-        <Space
-          direction={screens.xs ? "vertical" : "horizontal"}
-          style={{ marginBottom: 16, width: "100%", justifyContent: "space-between" }}
-        >
-          <Space direction={screens.xs ? "vertical" : "horizontal"}>
+    <div style={{ padding: 24 }}>
+      <Row justify="space-between" align="middle" gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={12}>
+          <Title level={3}>Manage Counselling Slots</Title>
+        </Col>
+        <Col xs={24} sm={24} md={12} style={{ textAlign: "right" }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setEditingSlot(null);
+              setModalMode("create");
+              setModalOpen(true);
+            }}
+          >
+            Create Slot
+          </Button>
+        </Col>
+      </Row><br></br>
+
+      <Card>
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={24} md={8}>
             <Input
               placeholder="Search..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear
-              style={{ width: screens.xs ? "100%" : 200 }}
             />
+          </Col>
+
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Filter by mode"
+              allowClear
+              style={{ width: "100%" }}
+              value={filterMode}
+              onChange={setFilterMode}
+            >
+              <Option value="Online">Online</Option>
+              <Option value="Offline">Offline</Option>
+            </Select>
+          </Col>
+
+          <Col xs={24} sm={12} md={6}>
             <DatePicker
               placeholder="Filter by date"
-              value={filterDate ? dayjs(filterDate) : null}
-              onChange={(date) => setFilterDate(date)}
-              style={{ width: screens.xs ? "100%" : 160 }}
+              style={{ width: "100%" }}
+              value={filterDate}
+              onChange={setFilterDate}
             />
-          </Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setModalOpen(true)}
-            style={{ width: screens.xs ? "100%" : "auto" }}
-          >
-            Create Slot
-          </Button>
-        </Space>
-      </Card>
+          </Col>
+        </Row>
 
-      {/* Slot list outside the card */}
-      <div style={{ marginTop: -24 }}>
         <Table
           columns={columns}
           dataSource={filteredSlots}
+          rowKey="key"
           pagination={{ pageSize: 5 }}
-          scroll={{ x: screens.sm ? 0 : 900 }}
-          style={{ borderRadius: token.borderRadius, overflowX: "auto" }}
+          scroll={{ x: 768 }}
         />
-      </div>
+      </Card>
 
       <CreateSlotModal
         open={modalOpen}
-        onCancel={() => setModalOpen(false)}
+        editingSlot={editingSlot}
+        mode={modalMode}
+        onCancel={() => {
+          setModalOpen(false);
+          setEditingSlot(null);
+          setModalMode("create");
+        }}
         onCreate={handleCreate}
       />
     </div>
