@@ -23,6 +23,7 @@ import {
     SearchOutlined,
     UploadOutlined,
     EditOutlined,
+    CheckCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import adminTheme from "../../../theme/adminTheme";
@@ -41,9 +42,9 @@ const PaymentManagement = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
     const handleEditPayment = (record) => {
-    setSelectedPayment(record);
-    setIsModalOpen(true);
-};
+        setSelectedPayment(record);
+        setIsModalOpen(true);
+    };
 
 
 
@@ -152,9 +153,13 @@ const PaymentManagement = () => {
         { title: "Package", dataIndex: "package" },
         { title: "Amount", dataIndex: "amount" },
         {
-            title: "Status",
-            dataIndex: "status",
-            render: (status) => <Tag color={statusColorMap[status]}>{status}</Tag>,
+            title: "Payment Status",          
+            dataIndex: "status",      
+            render: (status) => (
+                <Tag color={statusColorMap[status]}>
+                    {status}
+                </Tag>
+            ),
         },
         {
             title: "Payment Method",
@@ -174,41 +179,60 @@ const PaymentManagement = () => {
                 ),
         },
         { title: "Transaction ID", dataIndex: "txn" },
-      {
-    title: "Action",
-    key: "action",
-    render: (_, record) => (
-        <Space>
-            {record.proof && (
-                <Button
-                    size="small"
-                    icon={<EyeOutlined />}
-                    onClick={() => {
-                        setSelectedPayment({ ...record, mode: "view" });
-                        setIsModalOpen(true);
-                    }}
-                >
-                    View
-                </Button>
-            )}
+        {
+            title: "Action",
+            render: (_, record) => {
+                // Only show Verify button for Verification Pending
+                if (record.status === "Verification Pending") {
+                    return (
+                        <Button
+                            size="large"
+                            type="primary"
+                            icon={<CheckCircleOutlined />}
+                            onClick={() => {
+                                setSelectedPayment({ ...record, mode: "verify" });
+                                setIsModalOpen(true);
+                            }}
+                        >
+                            Verify
+                        </Button>
+                    );
+                }
 
-            <Button
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => {
-                    setSelectedPayment({ ...record, mode: "edit" });
-                    setIsModalOpen(true);
-                }}
-            >
-                Edit
-            </Button>
-        </Space>
-    ),
-},
+                // For all other statuses, always show View + Edit
+                return (
+                    <Space>
+                        <Button
+                            size="large"
+                            icon={<EyeOutlined />}
+                            onClick={() => {
+                                setSelectedPayment({ ...record, mode: "view" });
+                                setIsModalOpen(true);
+                            }}
+                        >
+                            View
+                        </Button>
+
+                        <Button
+                            size="large"
+                            icon={<EditOutlined />}
+                            onClick={() => {
+                                setSelectedPayment({ ...record, mode: "edit" });
+                                setIsModalOpen(true);
+                            }}
+                        >
+                            Edit
+                        </Button>
+                    </Space>
+                );
+            },
+        }
+
+
 
     ];
 
-    
+
     return (
         <ConfigProvider theme={adminTheme}>
             <div style={{ padding: 16 }}>
@@ -246,7 +270,7 @@ const PaymentManagement = () => {
                                 type="primary"
                                 icon={<UploadOutlined />}
                                 onClick={() => setIsUploadModalOpen(true)}
-                                                  >
+                            >
                                 Upload Payment
                             </Button>
 
@@ -266,7 +290,7 @@ const PaymentManagement = () => {
 
                         <Col xs={24} md={6}>
                             <Select
-                                placeholder="Status"
+                                placeholder="Payment Status"
                                 allowClear
                                 style={{ width: "100%" }}
                                 onChange={setStatusFilter}
@@ -297,10 +321,10 @@ const PaymentManagement = () => {
 
                 {/* VIEW PAYMENT MODAL */}
                 <PaymentProofModal
-    open={isModalOpen}
-    onClose={() => setIsModalOpen(false)}
-    data={selectedPayment}
-/>
+                    open={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    data={selectedPayment}
+                />
 
 
                 <UploadPaymentModal

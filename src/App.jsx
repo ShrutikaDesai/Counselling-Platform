@@ -26,6 +26,8 @@ import UserList from "./components/admin/pages/UserList";
 import Programs from "./components/admin/pages/Programs";
 import ReportsManagement from "./components/admin/pages/ReportsManagement";
 import PaymentManagement from "./components/admin/pages/PaymentManagement";
+import SlotBooking from "./components/admin/pages/SlotBooking";
+import CreateSlot from "./components/admin/pages/CreateSlot";
 
 
 
@@ -65,7 +67,9 @@ const App = () => {
           <Route path="programs" element={<Programs />} />
           <Route path="reportsManagement" element={<ReportsManagement />} />
           <Route path="paymentManagement" element={<PaymentManagement />} />
-        
+          <Route path="slotbooking" element={<SlotBooking />} />
+          <Route path="createslot" element={<CreateSlot />} />
+          
         </Route>
        
 

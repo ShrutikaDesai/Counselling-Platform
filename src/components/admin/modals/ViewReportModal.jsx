@@ -3,15 +3,14 @@ import {
   Modal,
   Typography,
   Button,
-  Divider,
   Form,
   Input,
   Select,
   Row,
   Col,
-  Card,
   Upload,
   Empty,
+  DatePicker,
 } from "antd";
 import {
   DownloadOutlined,
@@ -19,9 +18,12 @@ import {
   FilePdfOutlined,
 } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
+import dayjs from "dayjs";
+
 
 const { Title } = Typography;
 const { Option } = Select;
+const { token } = adminTheme;
 
 const ViewReportModal = ({ open, onCancel, data, mode }) => {
   const [form] = Form.useForm();
@@ -31,14 +33,29 @@ const ViewReportModal = ({ open, onCancel, data, mode }) => {
   const isViewMode = mode === "view";
   const isBulkMode = mode === "bulkUpload";
 
-  useEffect(() => {
-    if (data && !isBulkMode) {
-      form.setFieldsValue(data);
-      if (data.pdfUrl) setPreviewUrl(data.pdfUrl);
-    }
-  }, [data, form, isBulkMode]);
+  const labelStyle = {
+    fontSize: token.fontSize,
+    color: token.colorTextSecondary,
+    fontFamily: token.fontFamily,
+  };
 
-  if (!data) return null;
+useEffect(() => {
+  if (data && !isBulkMode) {
+    const formValues = {
+      ...data,
+      uploadedDate:
+        data.uploadedDate && data.uploadedDate !== "-"
+          ? isEditMode
+            ? dayjs(data.uploadedDate) // for DatePicker in edit mode
+            : dayjs(data.uploadedDate).format("YYYY-MM-DD") // for Input in view mode
+          : null,
+    };
+    form.setFieldsValue(formValues);
+
+    if (data.pdfUrl) setPreviewUrl(data.pdfUrl);
+  }
+}, [data, form, isBulkMode, isEditMode]);
+
 
   const handleUpload = (file) => {
     const fileUrl = URL.createObjectURL(file);
@@ -56,13 +73,15 @@ const ViewReportModal = ({ open, onCancel, data, mode }) => {
     document.body.removeChild(link);
   };
 
+  
+
   return (
     <Modal
       open={open}
       onCancel={onCancel}
       footer={null}
       width="90%"
-      style={{ maxWidth: 700 }}
+      style={{ maxWidth: 720 }}
       title={
         isBulkMode
           ? "Bulk Upload Reports"
@@ -71,180 +90,284 @@ const ViewReportModal = ({ open, onCancel, data, mode }) => {
           : "Report Details"
       }
     >
-      {/* ================= FORM: Edit/View ================= */}
+      {/* ================= FORM SECTION ================= */}
       {!isBulkMode && (
-        <Card bordered={false} style={{ marginBottom: 16 }}>
-          <Form form={form} layout="vertical">
-            <Row gutter={[16, 0]}>
-              <Col xs={24}>
-                <Form.Item label="Student Name" name="name">
-                  <Input readOnly={isViewMode ? true : !isEditMode} />
-                </Form.Item>
-              </Col>
+        <Form
+          form={form}
+          layout="vertical"
+          style={{ rowGap: 4 }}
+        >
+          <Row gutter={[16, 12]}>
+            <Col xs={24}>
+              <Form.Item
+                label="Student Name"
+                name="name"
+                style={{ marginBottom: 8 }}
+                labelCol={{ span: 24 }}
+              >
+                <Input
+                  readOnly={!isEditMode}
+                  style={{
+                    marginTop: 4,
+                    height: 36,
+                    borderRadius: token.borderRadius,
+                  }}
+                />
+              </Form.Item>
+            </Col>
 
-              <Col xs={24}>
-                <Form.Item label="Program" name="program">
-                  <Input readOnly={isViewMode ? true : !isEditMode} />
-                </Form.Item>
-              </Col>
+            <Col xs={24}>
+              <Form.Item
+                label="Program"
+                name="program"
+                style={{ marginBottom: 8 }}
+              >
+                <Input
+                  readOnly={!isEditMode}
+                  style={{
+                    marginTop: 4,
+                    height: 36,
+                    borderRadius: token.borderRadius,
+                  }}
+                />
+              </Form.Item>
+            </Col>
 
-              <Col xs={24} md={12}>
-                <Form.Item label="Status" name="status">
-                  {isEditMode ? (
-                    <Select>
-                      <Option value="Unlocked">Unlocked</Option>
-                      <Option value="Locked">Locked</Option>
-                      <Option value="Pending Upload">Pending Upload</Option>
-                    </Select>
-                  ) : (
-                    <Input readOnly />
-                  )}
-                </Form.Item>
-              </Col>
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Status"
+                name="status"
+                style={{ marginBottom: 8 }}
+              >
+                {isEditMode ? (
+                  <Select
+                    style={{
+                      marginTop: 4,
+                      height: 36,
+                      borderRadius: token.borderRadius,
+                    }}
+                  >
+                    <Option value="Unlocked">Unlocked</Option>
+                    <Option value="Locked">Locked</Option>
+                    <Option value="Pending Upload">Pending Upload</Option>
+                  </Select>
+                ) : (
+                  <Input
+                    readOnly
+                    style={{
+                      marginTop: 4,
+                      height: 36,
+                      borderRadius: token.borderRadius,
+                    }}
+                  />
+                )}
+              </Form.Item>
+            </Col>
 
-              <Col xs={24} md={12}>
-                <Form.Item label="Payment Status" name="paymentStatus">
-                  {isEditMode ? (
-                    <Select>
-                      <Option value="Fully Paid">Fully Paid</Option>
-                      <Option value="Partial Paid">Partial Paid</Option>
-                      <Option value="Pending">Pending</Option>
-                    </Select>
-                  ) : (
-                    <Input readOnly />
-                  )}
-                </Form.Item>
-              </Col>
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Payment Status"
+                name="paymentStatus"
+                style={{ marginBottom: 8 }}
+              >
+                {isEditMode ? (
+                  <Select
+                    style={{
+                      marginTop: 4,
+                      height: 36,
+                      borderRadius: token.borderRadius,
+                    }}
+                  >
+                    <Option value="Fully Paid">Fully Paid</Option>
+                    <Option value="Partial Paid">Partial Paid</Option>
+                    <Option value="Pending">Pending</Option>
+                  </Select>
+                ) : (
+                  <Input
+                    readOnly
+                    style={{
+                      marginTop: 4,
+                      height: 36,
+                      borderRadius: token.borderRadius,
+                    }}
+                  />
+                )}
+              </Form.Item>
+            </Col>
 
-              <Col xs={24} md={12}>
-                <Form.Item label="Uploaded Date" name="uploadedDate">
-                  <Input readOnly />
-                </Form.Item>
-              </Col>
+<Col xs={24} md={12}>
+  <Form.Item
+    label="Uploaded Date"
+    name="uploadedDate"
+    style={{ marginBottom: 8 }}
+  >
+    {isEditMode ? (
+      <DatePicker
+        style={{
+          width: "100%",
+          marginTop: 4,
+          height: 36,
+          borderRadius: token.borderRadius,
+        }}
+        format="YYYY-MM-DD"
+      />
+    ) : (
+      <Input
+        readOnly
+        style={{
+          marginTop: 4,
+          height: 36,
+          borderRadius: token.borderRadius,
+        }}
+      />
+    )}
+  </Form.Item>
+</Col>
 
-              <Col xs={24} md={12}>
-                <Form.Item label="Exam Status" name="examStatus">
-                  <Input readOnly />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Card>
+
+
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Exam Status"
+                name="examStatus"
+                style={{ marginBottom: 8 }}
+              >
+                <Input
+                  readOnly
+                  style={{
+                    marginTop: 4,
+                    height: 36,
+                    borderRadius: token.borderRadius,
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
       )}
 
-      <Divider />
+      <br />
 
-      {/* ================= PDF UPLOAD/DOWNLOAD ================= */}
-      <Title level={5}>
-        <FilePdfOutlined />{" "}
-        {isBulkMode
-          ? "Upload Reports"
-          : isEditMode
-          ? "Upload Report"
-          : "Uploaded Report"}
-      </Title>
+      {/* ================= UPLOAD / PREVIEW LABEL OUTSIDE ================= */}
+      <div style={{ marginBottom: 16 }}>
+        <Title style={labelStyle} level={5}>
+          <FilePdfOutlined />{" "}
+          {isBulkMode
+            ? "Upload Reports"
+            : isEditMode
+            ? "Upload Report"
+            : "Uploaded Report"}
+        </Title>
+      </div>
 
-      <Row gutter={[16, 16]} align="middle">
-        {/* PDF Preview */}
-        <Col xs={24} md={isBulkMode ? 24 : 16} style={{ display: "flex", justifyContent: "center" }}>
-          {previewUrl ? (
-            <Card
-              style={{
-                width: "100%",
-                maxWidth: 420,
-                height: 180,
-                borderRadius: 16,
-                overflow: "hidden",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-                border: "1px solid #e0e0e0",
-                backgroundColor: "#f9f9f9",
-                padding: 10,
-              }}
-              bodyStyle={{ padding: 0 }}
-            >
+      {/* ================= UPLOAD / PREVIEW SECTION ================= */}
+      <div
+        style={{
+          border: `1px solid ${token.colorBorder}`,
+          borderRadius: token.borderRadius,
+          padding: 20,
+          backgroundColor: token.colorBgContainer,
+        }}
+      >
+        <Row gutter={[16, 16]} align="middle">
+          {/* PDF Preview */}
+          <Col
+            xs={24}
+            md={isBulkMode ? 24 : 16}
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            {previewUrl ? (
               <iframe
                 src={previewUrl}
                 title="PDF Preview"
                 style={{
                   width: "100%",
-                  height: "100%",
-                  border: "none",
-                  borderRadius: 16,
+                  maxWidth: 360,
+                  height: 220,
+                  borderRadius: token.borderRadius,
+                  border: `1px solid ${token.colorBorder}`,
+                  background: token.colorBgElevated,
                 }}
               />
-            </Card>
-          ) : (
-            <Empty description="No report uploaded yet" />
-          )}
-        </Col>
+            ) : (
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <Empty description="No receipt / screenshot uploaded yet" />
+              </div>
+            )}
+          </Col>
 
-        {/* Action Buttons */}
-        <Col xs={24} md={isBulkMode ? 24 : 8}>
-          {/* Upload Button: Edit & Bulk */}
-          {(isEditMode || isBulkMode) && (
-            <Upload showUploadList={false} beforeUpload={handleUpload} multiple={isBulkMode}>
+          {/* ACTION BUTTONS */}
+          <Col xs={24} md={isBulkMode ? 24 : 8}>
+            {(isEditMode || isBulkMode) && (
+              <Upload
+                showUploadList={false}
+                beforeUpload={handleUpload}
+                multiple={isBulkMode}
+              >
+                <Button
+                  type="primary"
+                  icon={<UploadOutlined />}
+                  block
+                  style={{
+                    height: 48,
+                    backgroundColor: token.colorPrimary,
+                    borderRadius: token.borderRadius,
+                  }}
+                >
+                  {isBulkMode ? "Upload Selected Reports" : "Upload Report"}
+                </Button>
+              </Upload>
+            )}
+
+            {isViewMode && previewUrl && (
               <Button
                 type="primary"
-                icon={<UploadOutlined />}
+                icon={<DownloadOutlined />}
+                onClick={handleDownload}
                 block
                 style={{
                   height: 48,
-                  marginTop: isBulkMode ? 16 : 0,
-                  backgroundColor: adminTheme.token.colorPrimary,
-                  borderRadius: adminTheme.token.borderRadius,
+                  marginTop: 16,
+                  backgroundColor: token.colorPrimary,
+                  borderRadius: token.borderRadius,
                 }}
               >
-                {isBulkMode ? "Upload Selected Reports" : "Upload Report"}
-              </Button>
-            </Upload>
-          )}
-
-          {/* Download Button: View Only */}
-          {isViewMode && previewUrl && (
-            <Button
-              type="primary"
-              icon={<DownloadOutlined />}
-              onClick={handleDownload}
-              block
-              style={{
-                height: 48,
-                marginTop: 16,
-                backgroundColor: adminTheme.token.colorPrimary,
-                borderRadius: adminTheme.token.borderRadius,
-              }}
-            >
-              Download Report
-            </Button>
-          )}
-        </Col>
-      </Row>
-
-      {/* Footer: Only for edit/view if needed */}
-      {!isBulkMode && !isViewMode && (
-        <>
-          <Divider />
-          <div style={{ textAlign: "right" }}>
-            <Button onClick={onCancel} style={{ marginRight: 8 }}>
-              {isEditMode ? "Cancel" : "Close"}
-            </Button>
-
-            {isEditMode && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  console.log("Updated Values:", form.getFieldsValue());
-                  onCancel();
-                }}
-                style={{
-                  backgroundColor: adminTheme.token.colorPrimary,
-                  borderRadius: adminTheme.token.borderRadius,
-                }}
-              >
-                Save Changes
+                Download Report
               </Button>
             )}
-          </div>
-        </>
+          </Col>
+        </Row>
+      </div>
+
+      {/* ================= FOOTER ================= */}
+      {!isBulkMode && !isViewMode && (
+        <div style={{ textAlign: "right", marginTop: 20 }}>
+          <Button onClick={onCancel} style={{ marginRight: 8 }}>
+            Cancel
+          </Button>
+
+          {isEditMode && (
+            <Button
+              type="primary"
+              onClick={() => {
+                console.log("Updated Values:", form.getFieldsValue());
+                onCancel();
+              }}
+              style={{
+                backgroundColor: token.colorPrimary,
+                borderRadius: token.borderRadius,
+              }}
+            >
+              Save Changes
+            </Button>
+          )}
+        </div>
       )}
     </Modal>
   );

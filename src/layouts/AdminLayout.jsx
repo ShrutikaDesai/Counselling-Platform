@@ -26,6 +26,9 @@ import {
   SettingFilled,
   CloseOutlined,
   BellOutlined,
+  PlusCircleOutlined,
+  PlusCircleFilled,
+  ClockCircleFilled,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import adminTheme from "../theme/adminTheme";
@@ -62,6 +65,8 @@ const AdminLayout = () => {
     "/admin/exams": "Exams",
     "/admin/reportsmanagement": "Report Management",
     "/admin/paymentmanagement": "Payment Management",
+    "/admin/slotbooking":"Slot Booking Management",
+    "/admin/createslot":"Create Slot ",
     "/admin/settings": "Settings",
   };
 
@@ -142,6 +147,33 @@ const AdminLayout = () => {
     //   },
     //   style: { marginBottom: 12 },
     // },
+
+   {
+  key: "slot-booking",
+  icon: <CalendarFilled />,
+  label: "Slot Booking",
+  children: [
+    {
+      key: "/admin/createslot",
+      icon: <PlusCircleFilled />,  
+      label: "Create Slot",
+      onClick: () => {
+        navigate("/admin/createslot");
+        setDrawerVisible(false);
+      },
+    },
+    {
+      key: "/admin/slotbooking",
+      icon: <ClockCircleFilled />,
+      label: "Slot Booking",
+      onClick: () => {
+        navigate("/admin/slotbooking");
+        setDrawerVisible(false);
+      },
+    },
+  ],
+},
+
     {
       key: "/admin/reportsmanagement",
       icon: <FileTextFilled />,
