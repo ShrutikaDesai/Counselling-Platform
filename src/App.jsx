@@ -28,6 +28,9 @@ import ReportsManagement from "./components/admin/pages/ReportsManagement";
 import PaymentManagement from "./components/admin/pages/PaymentManagement";
 import SlotBooking from "./components/admin/pages/SlotBooking";
 import CreateSlot from "./components/admin/pages/CreateSlot";
+import ContentManagement from "./components/admin/pages/ContentManagement";
+import EmployeeList from "./components/admin/pages/EmployeeList";
+import ExamManagements from "./components/admin/pages/ExamManagements";
 
 
 
@@ -69,6 +72,10 @@ const App = () => {
           <Route path="paymentManagement" element={<PaymentManagement />} />
           <Route path="slotbooking" element={<SlotBooking />} />
           <Route path="createslot" element={<CreateSlot />} />
+          <Route path="contentManagement" element={<ContentManagement />} />
+          <Route path="employeeList" element={<EmployeeList />} />
+          <Route path="examManagements" element={<ExamManagements />} />
+
           
         </Route>
        

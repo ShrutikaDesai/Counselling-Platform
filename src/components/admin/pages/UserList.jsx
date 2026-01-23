@@ -9,6 +9,8 @@ import {
   Select,
   Row,
   Col,
+  Popconfirm,
+  Space,
 } from "antd";
 import {
   EyeOutlined,
@@ -17,10 +19,13 @@ import {
   ClockCircleOutlined,
   LockOutlined,
   UnlockOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
 import UserProfileModal from "../modals/UserProfileModal";
-
+import AddUserModal from "../modals/AddUserModal";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -29,7 +34,8 @@ const UserList = () => {
   const usersData = [
     {
       key: 1,
-      name: "Priya Sharma",
+      firstName: "Priya",
+      lastName: "Sharma",
       email: "priya.sharma@email.com",
       program: "Engineering Career Path",
       package: "Premium Package",
@@ -41,7 +47,8 @@ const UserList = () => {
     },
     {
       key: 2,
-      name: "Rajesh Kumar",
+      firstName: "Rajesh",
+      lastName: "Kumar",
       email: "rajesh.k@email.com",
       program: "Medical Career Guidance",
       package: "Standard Package",
@@ -53,7 +60,8 @@ const UserList = () => {
     },
     {
       key: 3,
-      name: "Anjali Verma",
+      firstName: "Anjali",
+      lastName: "Verma",
       email: "anjali.v@email.com",
       program: "MBA Preparation",
       package: "Basic Package",
@@ -65,44 +73,54 @@ const UserList = () => {
     },
   ];
 
+
+  const [users, setUsers] = useState(usersData);
   const [searchText, setSearchText] = useState("");
   const [paymentFilter, setPaymentFilter] = useState(null);
   const [examFilter, setExamFilter] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [addEditModalOpen, setAddEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
 
-  const filteredData = usersData.filter((user) => {
+  // ---------------- FILTERED DATA ----------------
+  const filteredData = users.filter((user) => {
+    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
+    const search = searchText.toLowerCase();
+
     const matchesSearch =
-      user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.program.toLowerCase().includes(searchText.toLowerCase());
+      fullName.includes(search) ||
+      user.program?.toLowerCase().includes(search) ||
+      user.email?.toLowerCase().includes(search) ||
+      user.package?.toLowerCase().includes(search);
 
-    const matchesPayment = paymentFilter
-      ? user.paymentStatus === paymentFilter
-      : true;
-
+    const matchesPayment = paymentFilter ? user.paymentStatus === paymentFilter : true;
     const matchesExam = examFilter ? user.examStatus === examFilter : true;
 
     return matchesSearch && matchesPayment && matchesExam;
   });
 
+
+  // TABLE COLUMNS (ALL columns visible)
   const columns = [
-      {
-    title: "Sr. No",
-    key: "srno",
-    render: (_, __, index) => index + 1,
-  },
+    {
+      title: "Sr. No",
+      key: "srno",
+      render: (_, __, index) => index + 1,
+    },
     {
       title: "Name",
       key: "name",
       render: (_, record) => (
         <div>
-          <Text strong>{record.name}</Text>
+          <Text strong>{`${record.firstName || ""} ${record.lastName || ""}`}</Text>
           <br />
           <Text type="colorTextSecondary">{record.email}</Text>
         </div>
       ),
     },
+
     {
       title: "Program / Package",
       key: "program",
@@ -122,9 +140,8 @@ const UserList = () => {
           record.paymentStatus === "Fully Paid"
             ? "success"
             : record.paymentStatus === "Partial Paid"
-            ? "warning"
-            : "processing";
-
+              ? "warning"
+              : "processing";
         return (
           <div>
             <Tag color={color}>{record.paymentStatus}</Tag>
@@ -165,50 +182,76 @@ const UserList = () => {
       dataIndex: "sessions",
       key: "sessions",
     },
-  {
-  title: "Actions",
-  key: "actions",
-  render: (_, record) => (
-    <Button
-      icon={<EyeOutlined />}
-      style={{
-        borderRadius: adminTheme.token.borderRadius,
-        width: "100%",
-      }}
-      onClick={() => {
-        setSelectedUser(record);
-        setIsModalOpen(true);
-      }}
-    >
-      View Profile
-    </Button>
-  ),
-},
-
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setSelectedUser(record);
+              setViewModalOpen(true);
+            }}
+          >
+            View
+          </Button>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setSelectedUser(record);
+              setAddEditModalOpen(true);
+            }}
+          >
+            Edit
+          </Button>
+          <Popconfirm
+            title="Delete User"
+            description="Are you sure you want to delete this user?"
+            onConfirm={() =>
+              setUsers((prev) => prev.filter((u) => u.key !== record.key))
+            }
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="default" danger icon={<DeleteOutlined />}>
+              Delete
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
   ];
 
-  // -------- RESPONSIVE SCROLL --------
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768); // md breakpoint
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  // ADD USER HANDLER
+  const handleAddUser = () => {
+    setSelectedUser(null);
+    setAddEditModalOpen(true);
+  };
 
   return (
     <div style={{ padding: 1 }}>
-      <Title level={3}>Users</Title>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Title level={3}>Users</Title>
+        </Col>
+        <Col>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddUser}>
+            Add User
+          </Button>
+        </Col>
+      </Row>
 
       <Card
         style={{
           borderRadius: adminTheme.token.borderRadius,
           boxShadow: adminTheme.token.boxShadow,
-          marginTop:30,
+          marginTop: 10,
         }}
       >
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        {/* FILTERS */}
+        <Row gutter={[16, 16]} wrap={true} style={{ marginBottom: 16 }}>
           <Col xs={24} sm={24} md={12}>
             <Input
               placeholder="Search user or program..."
@@ -247,22 +290,41 @@ const UserList = () => {
           </Col>
         </Row>
 
+        {/* TABLE */}
         <Table
           columns={columns}
           dataSource={filteredData}
           pagination={{ pageSize: 5 }}
-          scroll={isMobile ? { x: "max-content" } : undefined} // Only scroll on mobile
+          scroll={{ x: "max-content" }}
         />
       </Card>
 
-<UserProfileModal
-  open={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-  user={selectedUser}
-/>
+      {/* VIEW PROFILE MODAL */}
+      <UserProfileModal
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        user={selectedUser}
+      />
 
-
-
+      {/* ADD / EDIT USER MODAL */}
+      <AddUserModal
+        open={addEditModalOpen}
+        onClose={() => setAddEditModalOpen(false)}
+        user={selectedUser}
+        onSave={(newUser) => {
+          setUsers((prev) => {
+            const index = prev.findIndex((u) => u.key === newUser.key);
+            if (index >= 0) {
+              const updated = [...prev];
+              updated[index] = newUser;
+              return updated;
+            } else {
+              return [newUser, ...prev];
+            }
+          });
+          setAddEditModalOpen(false);
+        }}
+      />
     </div>
   );
 };

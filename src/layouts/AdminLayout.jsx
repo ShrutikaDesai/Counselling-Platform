@@ -29,6 +29,8 @@ import {
   PlusCircleOutlined,
   PlusCircleFilled,
   ClockCircleFilled,
+  SolutionOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import adminTheme from "../theme/adminTheme";
@@ -67,6 +69,9 @@ const AdminLayout = () => {
     "/admin/paymentmanagement": "Payment Management",
     "/admin/slotbooking":"Slot Booking Management",
     "/admin/createslot":"Create Slot ",
+    "/admin/contentManagement":"Content Management",
+    "/admin/examManagements":"Exam Management",
+    "/admin/employeeList":"Employee List",
     "/admin/settings": "Settings",
   };
 
@@ -137,16 +142,16 @@ const AdminLayout = () => {
       },
       style: { marginBottom: 12 },
     },
-    // {
-    //   key: "/admin/exams",
-    //   icon: <CalendarFilled />,
-    //   label: "Exams",
-    //   onClick: () => {
-    //     navigate("/admin/exams");
-    //     setDrawerVisible(false);
-    //   },
-    //   style: { marginBottom: 12 },
-    // },
+    {
+      key: "/admin/examManagements",
+      icon: <CalendarFilled />,
+      label: "Exam Management",
+      onClick: () => {
+        navigate("/admin/examManagements");
+        setDrawerVisible(false);
+      },
+      style: { marginBottom: 12 },
+    },
 
    {
   key: "slot-booking",
@@ -171,8 +176,20 @@ const AdminLayout = () => {
         setDrawerVisible(false);
       },
     },
-  ],
+],
 },
+
+{
+  key: "/admin/content-management",
+  icon: <BookFilled />,
+  label: "Content Management",
+  onClick: () => {
+    navigate("/admin/contentManagement");
+    setDrawerVisible(false);
+  },
+  style: { marginBottom: 12 },
+},
+
 
     {
       key: "/admin/reportsmanagement",
@@ -184,6 +201,36 @@ const AdminLayout = () => {
       },
       style: { marginBottom: 12 },
     },
+
+{
+  key: "employee-management",
+  icon: <TeamOutlined />,
+  label: "Employee Management",
+  children: [
+    {
+      key: "/admin/employeeList",
+      icon: <UnorderedListOutlined />, 
+      label: "Employee List",
+      onClick: () => {
+        navigate("/admin/employeeList");
+        setDrawerVisible(false);
+      },
+    },
+    //   {
+    //   key: "/admin/employees/roles",
+    //   icon: <SolutionOutlined />, 
+    //   label: "Employee Roles",
+    //   onClick: () => {
+    //     navigate("/admin/employees/roles");
+    //     setDrawerVisible(false);
+    //   },
+    // },
+
+
+  ],
+  style: { marginBottom: 12 },
+}
+
   
     // {
     //   key: "/admin/settings",
