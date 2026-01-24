@@ -178,7 +178,7 @@ const SlotBooking = () => {
                   borderRadius: 6,
                 }}
               >
-                {c.type === "lead" ? "Lead Counsellor" : "Counsellor"}
+                {c.type === "lead" ? "Lead Counsellor" : "Normal Counsellor"}
               </Tag>
             </div>
           ))}

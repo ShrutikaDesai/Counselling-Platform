@@ -31,6 +31,8 @@ import {
   ClockCircleFilled,
   SolutionOutlined,
   UnorderedListOutlined,
+  PhoneFilled,
+  NotificationFilled,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import adminTheme from "../theme/adminTheme";
@@ -69,9 +71,11 @@ const AdminLayout = () => {
     "/admin/paymentmanagement": "Payment Management",
     "/admin/slotbooking":"Slot Booking Management",
     "/admin/createslot":"Create Slot ",
+    "/admin/followupManagement":"Follow Up Management",
     "/admin/contentManagement":"Content Management",
     "/admin/examManagements":"Exam Management",
     "/admin/employeeList":"Employee List",
+    "/admin/notificationManagement":"Notification Management",
     "/admin/settings": "Settings",
   };
 
@@ -179,6 +183,17 @@ const AdminLayout = () => {
 ],
 },
 
+ {
+    key: "/admin/followupManagement",
+    icon: <PhoneFilled />,   
+    label: "Follow-Up Management",
+    onClick: () => {
+      navigate("/admin/followupManagement");
+      setDrawerVisible(false);
+    },
+    style: { marginBottom: 12 },
+  },
+
 {
   key: "/admin/content-management",
   icon: <BookFilled />,
@@ -229,8 +244,18 @@ const AdminLayout = () => {
 
   ],
   style: { marginBottom: 12 },
-}
+},
 
+ {
+    key: "/admin/notificationManagement",
+    icon: <NotificationFilled />,
+    label: "Notification Management",
+    onClick: () => {
+      navigate("/admin/notificationManagement");
+      setDrawerVisible(false);
+    },
+    style: { marginBottom: 12 },
+  },
   
     // {
     //   key: "/admin/settings",

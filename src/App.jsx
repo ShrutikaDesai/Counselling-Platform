@@ -31,6 +31,8 @@ import CreateSlot from "./components/admin/pages/CreateSlot";
 import ContentManagement from "./components/admin/pages/ContentManagement";
 import EmployeeList from "./components/admin/pages/EmployeeList";
 import ExamManagements from "./components/admin/pages/ExamManagements";
+import FollowUpManagement from "./components/admin/pages/FollowUpManagement";
+import NotificationManagement from "./components/admin/pages/NotificationManagement";
 
 
 
@@ -75,6 +77,8 @@ const App = () => {
           <Route path="contentManagement" element={<ContentManagement />} />
           <Route path="employeeList" element={<EmployeeList />} />
           <Route path="examManagements" element={<ExamManagements />} />
+          <Route path="followupManagement" element={<FollowUpManagement />} />
+          <Route path="notificationManagement" element={<NotificationManagement />} />
 
           
         </Route>
