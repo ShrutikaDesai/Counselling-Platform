@@ -62,6 +62,7 @@ const AdminLayout = () => {
 
   /* ===================== BREADCRUMB ===================== */
   const breadcrumbNameMap = {
+    "/admin/profile":"Profile",
     "/admin/dashboard": "Dashboard",
     "/admin/enquiry": "Enquiry & Leads",
     "/admin/users": "Users",
@@ -95,7 +96,7 @@ const AdminLayout = () => {
 
   /* ===================== MENU ITEMS ===================== */
   const menuItems = [
-    {
+      {
       key: "/admin/dashboard",
       icon: <DashboardFilled />,
       label: "Dashboard",

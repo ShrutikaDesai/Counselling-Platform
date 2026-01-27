@@ -205,7 +205,6 @@ const CreateSlot = () => {
           </Button>
 
           <Button
-            size="large"
             type="primary"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
