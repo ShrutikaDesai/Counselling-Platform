@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
-const ForgotPassword = () => {
+const Forgot_Password = () => {
   const navigate = useNavigate();
 
   const onFinish = (values) => {
@@ -147,4 +147,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default Forgot_Password;

@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React, {useEffect}from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
   Form,
   Input,
   Button,
-  Select,
   Typography,
   Avatar,
   Divider,
@@ -16,45 +16,37 @@ import {
   Grid,
   message,
 } from "antd";
-import {
-  UserOutlined,
-  LockOutlined,
-  MailOutlined,
-  SafetyOutlined,
-} from "@ant-design/icons";
-import adminTheme from "../theme/adminTheme";
-import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../adminSlices/authSlice";
-
+import { MailOutlined, UserOutlined, SafetyOutlined } from "@ant-design/icons";
+import adminTheme from "../../../theme/adminTheme";
+import {sendResetLink,clearForgotPasswordState,} from "../../../adminSlices/forgotPasswordSlice";
 
 const { Title, Text } = Typography;
-const { Option } = Select;
 const { useBreakpoint } = Grid;
 
-const AdminLogin = () => {
+const ForgotPassword = () => {
+
   const screens = useBreakpoint();
   const navigate = useNavigate();
   const dispatch = useDispatch();
- const { loading, error, success, successMessage } = useSelector((state) => state.auth);
+  const { loading, successMessage, error } = useSelector((state) => state.forgotPassword);
 
-useEffect(() => {
-  if (success) {
-    message.success(successMessage);
-    navigate("/admin/dashboard");
-  }
-}, [success, successMessage, navigate]);
+  useEffect(() => {
+    if (successMessage) {
+      message.success(successMessage);
+      dispatch(clearForgotPasswordState());
+    }
+  }, [successMessage, dispatch]);
 
-
-useEffect(() => {
-  if (error) {
-    message.error(error);
-  }
-}, [error]);
+  useEffect(() => {
+    if (error) {
+      message.error(error);
+      dispatch(clearForgotPasswordState());
+    }
+  }, [error, dispatch]);
 
 
   const onFinish = (values) => {
-    console.log("Login Values:", values);
-    dispatch(loginUser(values));
+    dispatch(sendResetLink(values));
   };
 
   return (
@@ -79,7 +71,7 @@ useEffect(() => {
               padding: screens.xs ? "8px" : "16px",
             }}
           >
-            {/* ================= HEADER ================= */}
+            {/* HEADER */}
             <Space
               direction="vertical"
               align="center"
@@ -89,33 +81,31 @@ useEffect(() => {
               <Avatar
                 size={screens.xs ? 72 : 96}
                 icon={<UserOutlined />}
-                style={{
-                  backgroundColor: adminTheme.token.colorPrimary,
-                }}
+                style={{ backgroundColor: adminTheme.token.colorPrimary }}
               />
 
               <Title
                 level={screens.xs ? 3 : 2}
                 style={{ marginBottom: 0, textAlign: "center" }}
               >
-                Login Portal
+                Forgot Password
               </Title>
 
               <Text
                 style={{
-                  fontSize: screens.xs ? 16 : 20,
-                  fontWeight: 700,
+                  fontSize: screens.xs ? 16 : 18,
+                  fontWeight: 500,
                   color: adminTheme.token.colorPrimary,
                   textAlign: "center",
                 }}
               >
-                Admin / Employee / Counsellor
+                Enter your email to reset your password
               </Text>
             </Space>
 
             <Divider style={{ margin: "20px 0" }} />
 
-            {/* ================= FORM ================= */}
+            {/* FORM */}
             <Form layout="vertical" onFinish={onFinish}>
               <Form.Item
                 label={<Text strong>Email Address</Text>}
@@ -128,62 +118,26 @@ useEffect(() => {
                 <Input
                   size="large"
                   prefix={<MailOutlined />}
+                  placeholder="yourname@example.com"
+                  style={{ height: 48 }}
                   allowClear
-                  style={{ height: 48 }}
                 />
               </Form.Item>
 
-              <Form.Item
-                label={<Text strong>Password</Text>}
-                name="password"
-                rules={[
-                  { required: true, message: "Password is required" },
-                  { min: 8, message: "Minimum 8 characters required" },
-                ]}
-              >
-                <Input.Password
-                  size="large"
-                  prefix={<LockOutlined />}
-                  placeholder="••••••••"
-                  style={{ height: 48 }}
-                />
-              </Form.Item>
-
-              <Form.Item
-                label={<Text strong>Login As</Text>}
-                name="role"
-                rules={[
-                  { required: true, message: "Please select your role" },
-                ]}
-              >
-                <Select size="large" placeholder="Select your role">
-                  <Option value="admin">Admin</Option>
-                  <Option value="super_admin">Superadmin</Option>
-                  <Option value="employee">Employee</Option>
-                  <Option value="counsellor">Counsellor</Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item style={{ marginTop: 28 }}>
+              <Form.Item style={{ marginTop: 24 }}>
                 <Button
                   type="primary"
                   htmlType="submit"
                   block
                   loading={loading}
                   icon={<SafetyOutlined />}
-                  style={{
-                    height: 52,
-                    fontWeight: 600,
-                    fontSize: 16,
-                    borderRadius: 10,
-                  }}
+                  style={{ height: 52, borderRadius: 10 }}
                 >
-                  Login
+                  Send Reset Link
                 </Button>
               </Form.Item>
 
-              {/* ================= FOOTER ================= */}
-              <Row justify="end">
+              <Row justify="center" style={{ marginTop: 16 }}>
                 <Text
                   style={{
                     color: adminTheme.token.colorPrimary,
@@ -191,9 +145,9 @@ useEffect(() => {
                     fontSize: 14,
                     fontWeight: 500,
                   }}
-                  onClick={() => navigate("/forgotpassword")}
+                  onClick={() => (window.location.href = "/admin-login")}
                 >
-                  Forgot Password?
+                  Back to Login
                 </Text>
               </Row>
             </Form>
@@ -204,4 +158,4 @@ useEffect(() => {
   );
 };
 
-export default AdminLogin;
+export default ForgotPassword;

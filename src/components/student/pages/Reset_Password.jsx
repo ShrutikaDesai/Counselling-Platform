@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
-const ResetPassword = () => {
+const Reset_Password = () => {
   const navigate = useNavigate();
 
   const onFinish = (values) => {
@@ -178,4 +178,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default Reset_Password;

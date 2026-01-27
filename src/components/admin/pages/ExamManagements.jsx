@@ -11,6 +11,7 @@ import {
   Row,
   Col,
   message,
+  Modal,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -20,11 +21,13 @@ import {
   ExportOutlined,
   SearchOutlined,
   UnlockOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { confirm } = Modal;
 
 const ExamManagements = () => {
   // ---------------- DATA ----------------
@@ -35,8 +38,6 @@ const ExamManagements = () => {
       program: "Engineering Career Path",
       status: "Awaiting Approval",
       completedDate: "2026-01-05",
-      score: "85/100",
-      link: "https://exam-link.com/1",
     },
     {
       key: 2,
@@ -44,8 +45,6 @@ const ExamManagements = () => {
       program: "Medical Career Guidance",
       status: "In Progress",
       completedDate: "-",
-      score: "-",
-      link: "https://exam-link.com/2",
     },
     {
       key: 3,
@@ -53,8 +52,6 @@ const ExamManagements = () => {
       program: "MBA Preparation",
       status: "Completed",
       completedDate: "2026-01-10",
-      score: "78/100",
-      link: "https://exam-link.com/3",
     },
     {
       key: 4,
@@ -62,8 +59,6 @@ const ExamManagements = () => {
       program: "Career Assessment",
       status: "Not Started",
       completedDate: "-",
-      score: "-",
-      link: "https://exam-link.com/4",
     },
   ]);
 
@@ -71,15 +66,82 @@ const ExamManagements = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState(null);
 
-  // ---------------- APPROVE HANDLER ----------------
+  // ---------------- APPROVE ----------------
   const handleApproveExam = (key) => {
-    setExamRecords((prev) =>
-      prev.map((item) =>
-        item.key === key ? { ...item, status: "Completed" } : item
-      )
-    );
+    confirm({
+      title: "Approve Exam?",
+      icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+      content:
+        "Are you sure you want to approve this exam? The student's report will be unlocked.",
+      centered: true,
+      mask: true,
+      closable: true,
+      maskClosable: true,
+      okText: "Yes, Approve",
+      okType: "primary",
+      okButtonProps: { style: { background: "#52c41a", borderColor: "#52c41a" } },
+      cancelText: "Cancel",
+      onOk() {
+        setExamRecords((prev) =>
+          prev.map((item) =>
+            item.key === key
+              ? {
+                  ...item,
+                  status: "Completed",
+                  completedDate: new Date().toISOString().split("T")[0],
+                }
+              : item
+          )
+        );
+        message.success("Exam approved successfully. Report unlocked!");
+      },
+    });
+  };
 
-    message.success("Exam approved successfully. Report unlocked!");
+  // ---------------- REJECT (WITH CONFIRM MODAL) ----------------
+  const handleRejectExam = (key) => {
+    confirm({
+      title: "Reject Exam?",
+      icon: <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />,
+      content:
+        "Are you sure you want to reject this exam? This action cannot be undone.",
+      centered: true,
+      mask: true,
+      closable: true,
+      maskClosable: true,
+      okText: "Yes, Reject",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk() {
+        setExamRecords((prev) =>
+          prev.map((item) =>
+            item.key === key ? { ...item, status: "Rejected" } : item
+          )
+        );
+        message.warning("Exam rejected successfully.");
+      },
+    });
+  };
+
+  // ---------------- SEND REMINDER ----------------
+  const handleSendReminder = (key) => {
+    confirm({
+      title: "Send Reminder?",
+      icon: <BellOutlined style={{ color: "#1E40AF" }} />,
+      content:
+        "Are you sure you want to send a reminder to the student about this exam?",
+      centered: true,
+      mask: true,
+      closable: true,
+      maskClosable: true,
+      okText: "Yes, Send",
+      okType: "primary",
+      okButtonProps: { style: { background: "#1E40AF", borderColor: "#1E40AF" } },
+      cancelText: "Cancel",
+      onOk() {
+        message.success("Reminder sent successfully to the student!");
+      },
+    });
   };
 
   // ---------------- FILTER LOGIC ----------------
@@ -118,6 +180,12 @@ const ExamManagements = () => {
             In Progress
           </Tag>
         );
+      case "Rejected":
+        return (
+          <Tag icon={<MinusCircleOutlined />} color="error">
+            Rejected
+          </Tag>
+        );
       default:
         return (
           <Tag icon={<MinusCircleOutlined />} color="default">
@@ -129,11 +197,11 @@ const ExamManagements = () => {
 
   // ---------------- TABLE COLUMNS ----------------
   const columns = [
-       {
+    {
       title: "Sr. No",
       key: "srno",
       render: (_, __, index) => index + 1,
-     },
+    },
     {
       title: "User Name",
       dataIndex: "userName",
@@ -151,38 +219,52 @@ const ExamManagements = () => {
     {
       title: "Completed Date",
       dataIndex: "completedDate",
-      render: (date) => <Text type="secondary">{date}</Text>,
-    },
-    {
-      title: "Score",
-      dataIndex: "score",
-      render: (score) => <Text strong>{score}</Text>,
-    },
-    {
-      title: "Exam Link",
-      dataIndex: "link",
-      render: (link) => (
-        <a href={link} target="_blank" rel="noopener noreferrer">
-          View Link <ExportOutlined />
-        </a>
-      ),
+      render: (date) => <Text type="colorTextSecondary">{date}</Text>,
     },
     {
       title: "Actions",
       render: (_, record) => (
         <Space>
-          {record.status === "Awaiting Approval" && (
-            <Button
-              type="primary"
-              icon={<UnlockOutlined />}
-              onClick={() => handleApproveExam(record.key)}
-            >
-              Approve Exam
-            </Button>
+          {(record.status === "Awaiting Approval" || record.status === "In Progress") && (
+            <>
+              <Button
+                type="primary"
+                icon={<UnlockOutlined />}
+                onClick={() => handleApproveExam(record.key)}
+              >
+                Approve Exam
+              </Button>
+
+              <Button
+                danger
+                icon={<MinusCircleOutlined />}
+                onClick={() => handleRejectExam(record.key)}
+              >
+                Reject
+              </Button>
+            </>
           )}
 
           {record.status === "Completed" && (
-            <Button disabled>Approved</Button>
+            <Button disabled type="primary">
+              Approved
+            </Button>
+          )}
+
+          {record.status === "Rejected" && (
+            <Button disabled danger>
+              Rejected
+            </Button>
+          )}
+
+          {record.status === "Not Started" && (
+            <Button
+              type="default"
+              icon={<BellOutlined />}
+              onClick={() => handleSendReminder(record.key)}
+            >
+              Send Reminder
+            </Button>
           )}
         </Space>
       ),
@@ -227,12 +309,13 @@ const ExamManagements = () => {
               <Option value="Completed">Approved</Option>
               <Option value="Awaiting Approval">Awaiting Approval</Option>
               <Option value="In Progress">In Progress</Option>
+              <Option value="Rejected">Rejected</Option>
               <Option value="Not Started">Not Started</Option>
             </Select>
           </Col>
         </Row>
 
-        {/* TABLE WITH PAGINATION */}
+        {/* TABLE */}
         <Table
           columns={columns}
           dataSource={filteredData}

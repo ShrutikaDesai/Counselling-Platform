@@ -14,8 +14,8 @@ import SlotBookingList from "./components/student/pages/SlotBookingList";
 import ContentLibrary from "./components/student/pages/ContentLibrary";
 import StudentProfile from "./components/student/pages/StudentProfile";
 import AdminLogin from "./components/AdminLogin";
-import ForgotPassword from "./components/student/pages/ForgotPassword";
-import ResetPassword from "./components/student/pages/ResetPassword";
+import Forgot_Password from "./components/student/pages/Forgot_Password";
+import Reset_Password from "./components/student/pages/Reset_Password";
 import StudentPayments from "./components/student/pages/Payments";
 
 {/*  Admin Dashboard */}
@@ -34,6 +34,8 @@ import ExamManagements from "./components/admin/pages/ExamManagements";
 import FollowUpManagement from "./components/admin/pages/FollowUpManagement";
 import NotificationManagement from "./components/admin/pages/NotificationManagement";
 import Profile from "./components/admin/pages/Profile";
+import ForgotPassword from "./components/admin/pages/ForgotPassword";
+import ResetPassword from "./components/admin/pages/ResetPassword";
 
 
 
@@ -43,12 +45,18 @@ const App = () => {
     <BrowserRouter>
       <Routes>
 
-        {/*  PUBLIC ROUTE */}
+          {/* =================== STUDENT AUTH ROUTES ===================== */}
         <Route path="/register" element={<StudentRegister />} />
         <Route path="/" element={<StudentLogin />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />   
-        <Route path="/reset-password" element={<ResetPassword />} /> 
+        <Route path="/forgot_password" element={<Forgot_Password />} /> 
+        <Route path="/reset_password" element={<Reset_Password />} /> 
+
+
+          {/* =================== ADMIN AUTH ROUTES ===================== */}
+        <Route path="/admin-login" element={<AdminLogin />} /> 
+        <Route path="/forgotpassword" element={<ForgotPassword />} /> 
+        <Route path="/resetpassword" element={<ResetPassword />} /> 
+        
 
              {/* =================== STUDENT ROUTES ===================== */}
         <Route path="/student" element={<StudentLayout />}>
@@ -81,8 +89,9 @@ const App = () => {
           <Route path="followupManagement" element={<FollowUpManagement />} />
           <Route path="notificationManagement" element={<NotificationManagement />} />
           <Route path="profile" element={<Profile />} />
+       
+          {/* <Route path="reset-password" element={<ResetPassword />} /> */}
 
-          
         </Route>
        
 

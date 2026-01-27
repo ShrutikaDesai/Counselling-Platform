@@ -64,7 +64,7 @@ const AdminLayout = () => {
   const breadcrumbNameMap = {
     "/admin/profile":"Profile",
     "/admin/dashboard": "Dashboard",
-    "/admin/enquiry": "Enquiry & Leads",
+    "/admin/enquiry-leads": "Enquiry & Leads",
     "/admin/users": "Users",
     "/admin/programs": "Programs",
     "/admin/exams": "Exams",
