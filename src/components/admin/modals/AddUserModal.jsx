@@ -1,144 +1,180 @@
 import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Modal, Form, Input, Button, Row, Col, Select, message } from "antd";
+import { addUser } from "../../../adminSlices/userSlice";
+import { fetchPrograms } from "../../../adminSlices/programSlice";
+import { fetchPackages } from "../../../adminSlices/packageSlice";
+
 
 const { Option } = Select;
 
-const AddUserModal = ({ open, onClose, user, onSave }) => {
+const AddUserModal = ({ open, onClose, user }) => {
   const [form] = Form.useForm();
+  const dispatch = useDispatch();
+  const { list: programs, loading: programLoading } = useSelector((state) => state.programs);
+  const { list: packages, loading: packageLoading } = useSelector((state) => state.packages);
+  const { loading: addUserLoading } = useSelector((state) => state.users);
 
-  const packages = ["Basic Package", "Standard Package", "Premium Package"];
-  const programs = ["Engineering", "Medical", "Arts"];
+  // -------- FETCH PROGRAMS & PACKAGES --------
+useEffect(() => {
+  if (open) {
+    dispatch(fetchPrograms());
+    dispatch(fetchPackages());
+  }
+}, [open, dispatch]);
 
+
+  // -------- PREFILL FORM --------
   useEffect(() => {
     if (user) {
-      // Prefill form if editing
       form.setFieldsValue({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        email: user.email || "",
-        mobile: user.mobile || "",
-        program: user.program || "",
-        package: user.package || "",
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        phone: user.phone,
+        program: user.program,
+        package: user.package,
       });
     } else {
-      form.resetFields(); // New user
+      form.resetFields();
     }
   }, [user, form]);
 
-  const handleSubmit = (values) => {
-    if (!values.firstName || !values.lastName) {
-      message.error("First Name and Last Name are required!");
-      return;
-    }
+  // -------- SUBMIT --------
+const handleSubmit = (values) => {
+  dispatch(addUser(values))
+    .unwrap()
+    .then((res) => {
+      message.success(res.message);
+      form.resetFields();
+      onClose();
+    })
+    .catch((err) => {
+      // 🔥 Handle validation errors
+      if (err?.errors) {
+        Object.values(err.errors).forEach((messages) => {
+          message.error(messages[0]);
+        });
+      } else {
+        message.error(err?.message || "Something went wrong");
+      }
+    });
+};
 
-    const newUser = {
-      key: user?.key || Date.now(),
-      ...values,
-    };
-
-    onSave(newUser);
-    form.resetFields();
-  };
 
   return (
     <Modal
       title={user ? "Edit User" : "Add New User"}
       open={open}
-      onCancel={onClose}
+      onCancel={() => {
+          form.resetFields();
+          onClose();
+     }}
       footer={null}
       destroyOnClose
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        {/* Name Fields */}
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               label="First Name"
-              name="firstName"
-              rules={[{ required: true, message: "Please enter first name" }]}
+              name="first_name"
+              rules={[{ required: true, message: "Enter first name" }]}
             >
-              <Input placeholder="First Name" />
+              <Input />
             </Form.Item>
           </Col>
+
           <Col span={12}>
             <Form.Item
               label="Last Name"
-              name="lastName"
-              rules={[{ required: true, message: "Please enter last name" }]}
+              name="last_name"
+              rules={[{ required: true, message: "Enter last name" }]}
             >
-              <Input placeholder="Last Name" />
+              <Input />
             </Form.Item>
           </Col>
-        </Row>
 
-        {/* Email & WhatsApp */}
-        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               label="Email"
               name="email"
               rules={[
-                { required: true, message: "Please enter email" },
-                { type: "email", message: "Please enter a valid email" },
+                { required: true, message: "Enter email" },
+                { type: "email" },
               ]}
             >
-              <Input placeholder="Email" />
+              <Input />
             </Form.Item>
           </Col>
+
           <Col span={12}>
             <Form.Item
-              label="WhatsApp Mobile Number"
-              name="mobile"
+              label="Mobile Number(WhatsApp)"
+              name="phone"
               rules={[
-                { required: true, message: "Please enter mobile number" },
-                {
-                  pattern: /^[0-9]{10}$/,
-                  message: "Please enter a valid 10-digit number",
-                },
+                { required: true },
+                { pattern: /^[0-9]{10}$/, message: "10 digit number" },
               ]}
             >
-              <Input placeholder="WhatsApp Number" maxLength={10} />
+              <Input maxLength={10} />
             </Form.Item>
           </Col>
+
+          {/* -------- PROGRAM DROPDOWN -------- */}
+          <Col span={12}>
+            <Form.Item
+              label="Program"
+              name="program"
+              rules={[{ required: true }]}
+            >
+              <Select
+                placeholder="Select program"
+                loading={programLoading}
+                allowClear
+              >
+                {programs.map((p) => (
+                  <Option key={p.id} value={p.id}>
+                    {p.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+
+          {/* -------- PACKAGE DROPDOWN -------- */}
+         <Col span={12}>
+  <Form.Item label="Package" name="package">
+    <Select
+      placeholder="Select package"
+      loading={packageLoading}
+      allowClear
+    >
+      {packages.map((pkg) => (
+        <Option key={pkg.id} value={pkg.id}>
+          {pkg.name}
+        </Option>
+      ))}
+    </Select>
+  </Form.Item>
+</Col>
+
         </Row>
 
-        {/* Program Dropdown */}
-        <Form.Item
-          label="Program"
-          name="program"
-          rules={[{ required: true, message: "Please select a program" }]}
-        >
-          <Select placeholder="Select Program">
-            {programs.map((prog) => (
-              <Option key={prog} value={prog}>
-                {prog}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+        <div style={{ textAlign: "right" }}>
+         <Button
+  type="primary"
+  htmlType="submit"
+  loading={addUserLoading}
+  disabled={addUserLoading}
+>
+  {user ? "Update User" : "Add User"}
+</Button>
 
-        {/* Package Dropdown */}
-        <Form.Item label="Package" name="package">
-          <Select placeholder="Select package">
-            {packages.map((pkg) => (
-              <Option key={pkg} value={pkg}>
-                {pkg}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        {/* Buttons */}
-
-        <Form.Item>
-          <div style={{ textAlign: "right" }}>
-            <Button type="primary" htmlType="submit" style={{ marginRight: 8 }}>
-              {user ? "Update User" : "Add User"}
-            </Button>
-            <Button onClick={onClose}>Cancel</Button>
-          </div>
-        </Form.Item>
-
+          <Button onClick={onClose} style={{ marginLeft: 8 }}>
+            Cancel
+          </Button>
+        </div>
       </Form>
     </Modal>
   );

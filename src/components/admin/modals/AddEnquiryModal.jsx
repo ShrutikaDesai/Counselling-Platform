@@ -141,7 +141,7 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
           <Col span={12}>
             <Form.Item
               name="phone"
-              label="Phone"
+              label="Mobile Number(Whatsapp)"
               rules={[
                 { required: true },
                 { len: 10, message: "Phone must be 10 digits" },

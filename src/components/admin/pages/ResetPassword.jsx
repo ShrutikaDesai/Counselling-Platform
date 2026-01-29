@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
     Card,
@@ -22,6 +22,7 @@ import {
 } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
 import { resetPassword, clearResetPasswordState } from "../../../adminSlices/resetPasswordSlice";
+import { clearForgotPasswordState } from "../../../adminSlices/forgotPasswordSlice";
 
 
 
@@ -31,14 +32,22 @@ const { useBreakpoint } = Grid;
 const ResetPassword = () => {
     const screens = useBreakpoint();
     const dispatch = useDispatch();
-    const { loading, error, success } = useSelector((state) => state.resetPassword);
+    const { loading, error, success, successMessage } = useSelector((state) => state.resetPassword);
+    let { email } = useSelector((state) => state.forgotPassword);
+    const [form] = Form.useForm();
+
+    // Fallback to localStorage if Redux state is null
+    if (!email) {
+        email = localStorage.getItem("resetEmail");
+    }
 
 
     const onFinish = (values) => {
         dispatch(
             resetPassword({
-                password: values.newPassword,
-                confirm_password: values.confirmPassword,
+                email: email,
+                new_password: values.new_password,
+                confirm_password: values.confirm_password,
             })
         );
     };
@@ -46,12 +55,18 @@ const ResetPassword = () => {
     useEffect(() => {
         if (success) {
             message.success(
-                "Your password has been reset successfully. Please log in with your new password."
+                successMessage || "Your password has been reset successfully. Please log in with your new password."
             );
+            localStorage.removeItem("resetEmail");
             dispatch(clearResetPasswordState());
-            window.location.href = "/admin-login";
+            dispatch(clearForgotPasswordState());
+            
+            // Delay redirect to show message
+            setTimeout(() => {
+                window.location.href = "/admin-login";
+            },3500);
         }
-    }, [success, dispatch]);
+    }, [success, successMessage, dispatch]);
 
     useEffect(() => {
         if (error) {
@@ -157,11 +172,11 @@ const ResetPassword = () => {
                         <Divider style={{ margin: "20px 0" }} />
 
                         {/* ================= FORM ================= */}
-                        <Form layout="vertical" onFinish={onFinish}>
+                        <Form layout="vertical" onFinish={onFinish} form={form}>
                             {/* NEW PASSWORD */}
                             <Form.Item
                                 label={<Text strong>New Password</Text>}
-                                name="newPassword"
+                                name="new_password"
                                 hasFeedback
                                 rules={[
                                     {
@@ -180,8 +195,8 @@ const ResetPassword = () => {
                             {/* CONFIRM PASSWORD */}
                             <Form.Item
                                 label={<Text strong>Confirm Password</Text>}
-                                name="confirmPassword"
-                                dependencies={["newPassword"]}
+                                name="confirm_password"
+                                dependencies={["new_password"]}
                                 hasFeedback
                                 rules={[
                                     { required: true, message: "Please confirm your password" },
@@ -193,7 +208,7 @@ const ResetPassword = () => {
                                                 );
                                             }
 
-                                            if (value !== getFieldValue("newPassword")) {
+                                            if (value !== getFieldValue("new_password")) {
                                                 return Promise.reject(
                                                     "Passwords do not match"
                                                 );

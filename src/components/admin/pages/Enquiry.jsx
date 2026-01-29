@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Table,
   Tag,
@@ -16,56 +17,49 @@ import dayjs from "dayjs";
 import adminTheme from "../../../theme/adminTheme";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import AddEnquiryModal from "../modals/AddEnquiryModal";
+import { fetchEnquiries } from "../../../adminSlices/enquiryListSlice";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const Enquiry = () => {
-  // ---------------- DATA ----------------
-  const enquiriesData = [
-    {
-      key: 1,
-      name: "Priya Sharma",
-      phone: "9876543210",
-      email: "priya@example.com",
-      program: "Engineering",
-      source: "Website",
-      date: "2026-01-19",
-      status: "New",
-    },
-    {
-      key: 2,
-      name: "Rajesh Kumar",
-      phone: "9876543211",
-      email: "rajesh@example.com",
-      program: "Medical",
-      source: "WhatsApp",
-      date: "2026-01-18",
-      status: "Contacted",
-    },
-    {
-      key: 3,
-      name: "Anjali Verma",
-      phone: "9876543212",
-      email: "anjali@example.com",
-      program: "Commerce",
-      source: "Call",
-      date: "2026-01-17",
-      status: "Converted",
-    },
-    {
-      key: 4,
-      name: "Vikram Singh",
-      phone: "9876543213",
-      email: "vikram@example.com",
-      program: "Arts",
-      source: "Walk-In",
-      date: "2026-01-16",
-      status: "New",
-    },
-  ];
 
-  // ---------------- COLORS ----------------
+  const dispatch = useDispatch();
+  const { list, loading, error } = useSelector((state) => state.enquiryList);
+
+
+
+    useEffect(() => {
+      dispatch(fetchEnquiries());  
+    }, [dispatch]);
+
+    // Use dynamic list from Redux instead of static data
+    const enquiriesData = Array.isArray(list) ? list : [];
+
+  // Source color mapping - handles different case variations
+  const getSourceColor = (source) => {
+    const normalized = source.toLowerCase().replace(/\s+/g, "");
+    const colorMap = {
+      "website": adminTheme.token.colorPrimary,
+      "whatsapp": adminTheme.token.colorSuccess,
+      "call": adminTheme.token.colorWarning,
+      "walkin": adminTheme.token.colorInfo,
+    };
+    return colorMap[normalized] || adminTheme.token.colorPrimary;
+  };
+
+  // Status color mapping
+  const getStatusColor = (status) => {
+    const normalized = status.toLowerCase();
+    if (normalized === "converted") {
+      return adminTheme.token.colorSuccess;
+    } else if (normalized === "contacted") {
+      return adminTheme.token.colorWarning;
+    }
+    return adminTheme.token.colorPrimary;
+  };
+
+  // Old color map (keeping for reference)
   const sourceColorMap = {
     Website: adminTheme.token.colorPrimary,
     WhatsApp: adminTheme.token.colorSuccess,
@@ -79,6 +73,8 @@ const Enquiry = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [sourceFilter, setSourceFilter] = useState(null);
   const [dateFilter, setDateFilter] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   // 🔥 NEW STATES (FOR CONVERT)
   const [modalMode, setModalMode] = useState("add"); // add | convert
@@ -89,19 +85,21 @@ const Enquiry = () => {
     const matchesSearch =
       enquiry.name.toLowerCase().includes(searchText.toLowerCase()) ||
       enquiry.program.toLowerCase().includes(searchText.toLowerCase()) ||
-      enquiry.source.toLowerCase().includes(searchText.toLowerCase());
+      enquiry.source.toLowerCase().includes(searchText.toLowerCase()) ||
+      enquiry.email.toLowerCase().includes(searchText.toLowerCase()) ||
+      enquiry.phone.includes(searchText);
 
     const matchesStatus = statusFilter
-      ? enquiry.status === statusFilter
+      ? enquiry.status.toLowerCase() === statusFilter.toLowerCase()
       : true;
 
     const matchesSource = sourceFilter
-      ? enquiry.source === sourceFilter
+      ? enquiry.source.toLowerCase() === sourceFilter.toLowerCase()
       : true;
 
-    const matchesDate = dateFilter
+    const matchesDate = dateFilter && enquiry.date !== "N/A"
       ? dayjs(enquiry.date).isSame(dateFilter, "day")
-      : true;
+      : !dateFilter;
 
     return (
       matchesSearch &&
@@ -116,7 +114,7 @@ const Enquiry = () => {
      {
     title: "Sr. No",
     key: "srno",
-    render: (_, __, index) => index + 1, // auto serial number
+    render: (_, __, index) => (currentPage - 1) * pageSize + index + 1, // Page-aware serial number
     responsive: ["xs", "sm", "md", "lg", "xl"],
   },
     {
@@ -150,7 +148,7 @@ const Enquiry = () => {
       dataIndex: "source",
       key: "source",
       render: (text) => (
-        <Tag color={sourceColorMap[text]}>{text}</Tag>
+        <Tag color={getSourceColor(text)}>{text}</Tag>
       ),
     },
     {
@@ -162,16 +160,9 @@ const Enquiry = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => {
-        const color =
-          status === "Converted"
-            ? adminTheme.token.colorSuccess
-            : status === "Contacted"
-            ? adminTheme.token.colorWarning
-            : adminTheme.token.colorPrimary;
-
-        return <Tag color={color}>{status}</Tag>;
-      },
+      render: (status) => (
+        <Tag color={getStatusColor(status)}>{status}</Tag>
+      ),
     },
     {
       title: "Action",
@@ -237,7 +228,7 @@ const Enquiry = () => {
       >
       <Row gutter={[16, 16]} align="middle">
   {/* Search - LEFT */}
-  <Col xs={24} md={11}>
+  <Col xs={24} sm={24} md={10}>
     <Input
       prefix={
         <SearchOutlined
@@ -251,48 +242,46 @@ const Enquiry = () => {
        />
   </Col>
 
-  {/* Filters - RIGHT */}
-  <Col xs={24} md={12}>
-    <Row gutter={[16, 16]} justify="end">
-      <Col xs={12} md={6}>
-        <Select
-          placeholder="Status"
-          value={statusFilter}
-          onChange={setStatusFilter}
-          allowClear
-          style={{ width: "100%" }}
-        >
-          <Option value="New">New</Option>
-          <Option value="Contacted">Contacted</Option>
-          <Option value="Converted">Converted</Option>
-        </Select>
-      </Col>
+  {/* Status Filter */}
+  <Col xs={24} sm={8} md={4}>
+    <Select
+      placeholder="Status"
+      value={statusFilter}
+      onChange={setStatusFilter}
+      allowClear
+      style={{ width: "100%" }}
+    >
+      <Option value="New">New</Option>
+      <Option value="Contacted">Contacted</Option>
+      <Option value="Converted">Converted</Option>
+    </Select>
+  </Col>
 
-      <Col xs={12} md={6}>
-        <Select
-          placeholder="Source"
-          value={sourceFilter}
-          onChange={setSourceFilter}
-          allowClear
-          style={{ width: "100%" }}
-        >
-          <Option value="Website">Website</Option>
-          <Option value="WhatsApp">WhatsApp</Option>
-          <Option value="Call">Call</Option>
-          <Option value="Walk-In">Walk-In</Option>
-        </Select>
-      </Col>
+  {/* Source Filter */}
+  <Col xs={24} sm={8} md={4}>
+    <Select
+      placeholder="Source"
+      value={sourceFilter}
+      onChange={setSourceFilter}
+      allowClear
+      style={{ width: "100%" }}
+    >
+      <Option value="Website">Website</Option>
+      <Option value="WhatsApp">WhatsApp</Option>
+      <Option value="Call">Call</Option>
+      <Option value="Walk-In">Walk-In</Option>
+    </Select>
+  </Col>
 
-      <Col xs={24} md={6}>
-        <DatePicker
-          placeholder="Filter by Date"
-          value={dateFilter}
-          onChange={(date) => setDateFilter(date)}
-          style={{ width: "100%" }}
-          allowClear
-        />
-      </Col>
-    </Row>
+  {/* Date Filter */}
+  <Col xs={24} sm={8} md={4}>
+    <DatePicker
+      placeholder="Filter by Date"
+      value={dateFilter}
+      onChange={(date) => setDateFilter(date)}
+      style={{ width: "100%" }}
+      allowClear
+    />
   </Col>
 </Row>
 
@@ -302,9 +291,15 @@ const Enquiry = () => {
           style={{ marginTop: 16 }}
           columns={columns}
           dataSource={filteredEnquiries}
-          pagination={{ pageSize: 5 }}
+          pagination={{ 
+            pageSize: pageSize,
+            current: currentPage,
+            onChange: (page) => setCurrentPage(page),
+          }}
           rowClassName={() => "enquiry-row"}
           scroll={{ x: "max-content" }}
+          loading={loading}
+          locale={{ emptyText: error ? `Error: ${error}` : "No enquiries found" }}
         />
       </Card>
 

@@ -1,20 +1,37 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.0.104:8000/api",
+  baseURL: "http://192.168.0.109:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// ================= REQUEST INTERCEPTOR =================
+// 👇 PUBLIC ENDPOINTS (NO TOKEN)
+const publicEndpoints = [
+  "/forgot-password/",
+  "/login/",
+  "/reset-password/",
+  "/verify-otp/",
+];
+
+// ================= REQUEST =================
 axiosInstance.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem("accessToken");
 
-    // ✅ Attach token globally for ALL APIs
-    if (accessToken) {
+    const isPublic = publicEndpoints.some((url) =>
+      config.url?.includes(url)
+    );
+
+    // ✅ Attach token ONLY for protected APIs
+    if (accessToken && !isPublic) {
       config.headers.Authorization = `Bearer ${accessToken}`;
+      console.log("Request:", config.url, config.headers.Authorization);
+
+    } else {
+      // 🔥 Make 100% sure it's removed
+      delete config.headers.Authorization;
     }
 
     return config;
@@ -22,16 +39,16 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ================= RESPONSE INTERCEPTOR =================
+// ================= RESPONSE =================
 axiosInstance.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      console.error("401 Unauthorized – token expired or invalid");
-
-      // OPTIONAL (later):
-      // 1. Refresh token
-      // 2. Logout user
+  (error) => {
+    if (
+      error.response?.status === 401 &&
+      !window.location.pathname.includes("/admin-login")
+    ) {
+      localStorage.clear();
+      window.location.replace("/admin-login");
     }
 
     return Promise.reject(error);

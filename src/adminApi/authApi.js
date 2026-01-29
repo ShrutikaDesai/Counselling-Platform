@@ -12,6 +12,12 @@ export const forgotPasswordApi = async (payload) => {
   return response.data;
 };
 
+// VERIFY OTP
+export const verifyOtpApi = async (payload) => {
+  const response = await axiosInstance.post("/verify-otp/", payload);
+  return response.data;
+};
+
 // RESET PASSWORD
 export const resetPasswordApi = async (payload) => {
   const response = await axiosInstance.post("/reset-password/", payload);

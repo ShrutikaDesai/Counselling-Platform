@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Table,
   Typography,
@@ -26,55 +27,21 @@ import {
 import adminTheme from "../../../theme/adminTheme";
 import UserProfileModal from "../modals/UserProfileModal";
 import AddUserModal from "../modals/AddUserModal";
+import { fetchStudents } from "../../../adminSlices/userSlice";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const UserList = () => {
-  const usersData = [
-    {
-      key: 1,
-      firstName: "Priya",
-      lastName: "Sharma",
-      email: "priya.sharma@email.com",
-      program: "Engineering Career Path",
-      package: "Premium Package",
-      paymentStatus: "Fully Paid",
-      paymentAmount: "₹25,000",
-      examStatus: "Completed",
-      reportStatus: "Unlocked",
-      sessions: "3 completed",
-    },
-    {
-      key: 2,
-      firstName: "Rajesh",
-      lastName: "Kumar",
-      email: "rajesh.k@email.com",
-      program: "Medical Career Guidance",
-      package: "Standard Package",
-      paymentStatus: "Partial Paid",
-      paymentAmount: "₹7,500 / ₹15,000",
-      examStatus: "Pending",
-      reportStatus: "Locked",
-      sessions: "1 completed",
-    },
-    {
-      key: 3,
-      firstName: "Anjali",
-      lastName: "Verma",
-      email: "anjali.v@email.com",
-      program: "MBA Preparation",
-      package: "Basic Package",
-      paymentStatus: "Verification Pending",
-      paymentAmount: "₹10,000",
-      examStatus: "Pending",
-      reportStatus: "Locked",
-      sessions: "0 completed",
-    },
-  ];
+
+  const dispatch = useDispatch();
+ const { list: users, loading, error } = useSelector((state) => state.users);
 
 
-  const [users, setUsers] = useState(usersData);
+useEffect(() => {
+  dispatch(fetchStudents());
+}, [dispatch]);
+
   const [searchText, setSearchText] = useState("");
   const [paymentFilter, setPaymentFilter] = useState(null);
   const [examFilter, setExamFilter] = useState(null);
@@ -85,21 +52,28 @@ const UserList = () => {
 
 
   // ---------------- FILTERED DATA ----------------
-  const filteredData = users.filter((user) => {
-    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
-    const search = searchText.toLowerCase();
+const filteredData = users.filter((user) => {
+  const firstName = user.first_name || "";
+  const lastName = user.last_name || "";
+  const program = typeof user.program === "string" ? user.program : user.program?.name || "";
+  const packageName = typeof user.package === "string" ? user.package : user.package?.name || "";
+  const email = user.email || "";
 
-    const matchesSearch =
-      fullName.includes(search) ||
-      user.program?.toLowerCase().includes(search) ||
-      user.email?.toLowerCase().includes(search) ||
-      user.package?.toLowerCase().includes(search);
+  const fullName = `${firstName} ${lastName}`.toLowerCase();
+  const search = searchText.toLowerCase();
 
-    const matchesPayment = paymentFilter ? user.paymentStatus === paymentFilter : true;
-    const matchesExam = examFilter ? user.examStatus === examFilter : true;
+  const matchesSearch =
+    fullName.includes(search) ||
+    program.toLowerCase().includes(search) ||
+    packageName.toLowerCase().includes(search) ||
+    email.toLowerCase().includes(search);
 
-    return matchesSearch && matchesPayment && matchesExam;
-  });
+  const matchesPayment = paymentFilter ? user.paymentStatus === paymentFilter : true;
+  const matchesExam = examFilter ? user.examStatus === examFilter : true;
+
+  return matchesSearch && matchesPayment && matchesExam;
+});
+
 
 
   // TABLE COLUMNS (ALL columns visible)
@@ -114,7 +88,7 @@ const UserList = () => {
       key: "name",
       render: (_, record) => (
         <div>
-          <Text strong>{`${record.firstName || ""} ${record.lastName || ""}`}</Text>
+          <Text strong>{`${record.first_name || ""} ${record.last_name || ""}`}</Text>
           <br />
           <Text type="colorTextSecondary">{record.email}</Text>
         </div>
@@ -234,7 +208,7 @@ const UserList = () => {
     <div style={{ padding: 1 }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
-          <Title level={3}>Users</Title>
+          <Title level={3}>User Lists</Title>
         </Col>
         <Col>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAddUser}>

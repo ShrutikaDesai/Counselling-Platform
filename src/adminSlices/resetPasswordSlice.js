@@ -23,12 +23,17 @@ const resetPasswordSlice = createSlice({
     loading: false,
     success: false,
     error: null,
+    successMessage: null,
   },
   reducers: {
     clearResetPasswordState: (state) => {
       state.loading = false;
       state.success = false;
       state.error = null;
+      state.successMessage = null;
+    },
+    clearSuccessAndEmail: (state) => {
+      state.success = false;
     },
   },
   extraReducers: (builder) => {
@@ -37,9 +42,10 @@ const resetPasswordSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(resetPassword.fulfilled, (state) => {
+      .addCase(resetPassword.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
+        state.successMessage = action.payload.message || action.payload.detail || "Password reset successfully";
       })
       .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
@@ -48,5 +54,5 @@ const resetPasswordSlice = createSlice({
   },
 });
 
-export const { clearResetPasswordState } = resetPasswordSlice.actions;
+export const { clearResetPasswordState, clearSuccessAndEmail } = resetPasswordSlice.actions;
 export default resetPasswordSlice.reducer;

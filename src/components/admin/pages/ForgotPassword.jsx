@@ -16,9 +16,9 @@ import {
   Grid,
   message,
 } from "antd";
-import { MailOutlined, UserOutlined, SafetyOutlined } from "@ant-design/icons";
+import { MailOutlined, UserOutlined, SafetyOutlined, LockOutlined } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
-import {sendResetLink,clearForgotPasswordState,} from "../../../adminSlices/forgotPasswordSlice";
+import {sendResetLink, verifyOtp, clearForgotPasswordState, resetOtpState, setEmailInState} from "../../../adminSlices/forgotPasswordSlice";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -28,14 +28,19 @@ const ForgotPassword = () => {
   const screens = useBreakpoint();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, successMessage, error } = useSelector((state) => state.forgotPassword);
+  const { loading, successMessage, error, otpSent, otpVerified } = useSelector((state) => state.forgotPassword);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (successMessage) {
       message.success(successMessage);
-      dispatch(clearForgotPasswordState());
+      if (otpVerified) {
+        navigate("/resetpassword", { replace: true });
+      } else {
+        dispatch(clearForgotPasswordState());
+      }
     }
-  }, [successMessage, dispatch]);
+  }, [successMessage, dispatch, otpVerified, navigate]);
 
   useEffect(() => {
     if (error) {
@@ -44,9 +49,24 @@ const ForgotPassword = () => {
     }
   }, [error, dispatch]);
 
+  const onFinishEmail = (values) => {
+    localStorage.setItem("resetEmail", values.email);
+    dispatch(setEmailInState(values.email));
+    dispatch(sendResetLink({ email: values.email }));
+  };
 
-  const onFinish = (values) => {
-    dispatch(sendResetLink(values));
+  const onFinishOtp = (values) => {
+    localStorage.setItem("resetEmail", values.email);
+    dispatch(setEmailInState(values.email));
+    dispatch(verifyOtp({
+      email: values.email,
+      otp: values.otp,
+    }));
+  };
+
+  const handleReset = () => {
+    form.resetFields();
+    dispatch(resetOtpState());
   };
 
   return (
@@ -71,7 +91,7 @@ const ForgotPassword = () => {
               padding: screens.xs ? "8px" : "16px",
             }}
           >
-            {/* HEADER */}
+            {/* ============ HEADER ============ */}
             <Space
               direction="vertical"
               align="center"
@@ -99,14 +119,19 @@ const ForgotPassword = () => {
                   textAlign: "center",
                 }}
               >
-                Enter your email to reset your password
+                {otpSent ? "Enter the OTP sent to your email" : "Enter your email to reset your password"}
               </Text>
             </Space>
 
             <Divider style={{ margin: "20px 0" }} />
 
-            {/* FORM */}
-            <Form layout="vertical" onFinish={onFinish}>
+            {/* ============ FORM ============ */}
+            <Form 
+              form={form} 
+              layout="vertical" 
+              onFinish={otpSent ? onFinishOtp : onFinishEmail}
+            >
+              {/* EMAIL FIELD */}
               <Form.Item
                 label={<Text strong>Email Address</Text>}
                 name="email"
@@ -121,22 +146,46 @@ const ForgotPassword = () => {
                   placeholder="yourname@example.com"
                   style={{ height: 48 }}
                   allowClear
+                  disabled={otpSent}
                 />
               </Form.Item>
 
+              {/* OTP FIELD - Shows after email is submitted */}
+              {otpSent && (
+                <Form.Item
+                  label={<Text strong>OTP Code</Text>}
+                  name="otp"
+                  rules={[
+                    { required: true, message: "OTP is required" },
+                    { pattern: /^\d{4,6}$/, message: "OTP must be 4-6 digits" },
+                  ]}
+                >
+                  <Input
+                    size="large"
+                    prefix={<LockOutlined />}
+                    placeholder="Enter OTP"
+                    style={{ height: 48 }}
+                    maxLength={6}
+                    allowClear
+                  />
+                </Form.Item>
+              )}
+
+              {/* SUBMIT BUTTON */}
               <Form.Item style={{ marginTop: 24 }}>
                 <Button
                   type="primary"
                   htmlType="submit"
                   block
                   loading={loading}
-                  icon={<SafetyOutlined />}
+                  icon={otpSent ? <SafetyOutlined /> : <SafetyOutlined />}
                   style={{ height: 52, borderRadius: 10 }}
                 >
-                  Send Reset Link
+                  {otpSent ? "Verify OTP" : "Send OTP"}
                 </Button>
               </Form.Item>
 
+              {/* BACK BUTTON */}
               <Row justify="center" style={{ marginTop: 16 }}>
                 <Text
                   style={{
@@ -145,9 +194,9 @@ const ForgotPassword = () => {
                     fontSize: 14,
                     fontWeight: 500,
                   }}
-                  onClick={() => (window.location.href = "/admin-login")}
+                  onClick={() => otpSent ? handleReset() : (window.location.href = "/admin-login")}
                 >
-                  Back to Login
+                  {otpSent ? "Change Email" : "Back to Login"}
                 </Text>
               </Row>
             </Form>
