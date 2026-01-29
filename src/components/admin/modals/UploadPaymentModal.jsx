@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
     Modal,
     Form,
@@ -9,20 +9,92 @@ import {
     Button,
     Row,
     Col,
+    message,
+    Empty,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import adminTheme from "../../../theme/adminTheme";
+import { useDispatch, useSelector } from "react-redux";
+import dayjs from "dayjs";
+
+import {
+    submitPayment,
+    resetPaymentState,
+} from "../../../adminSlices/paymentSlice";
+import { fetchStudents } from "../../../adminSlices/userSlice";
 
 const { Option } = Select;
 
 const UploadPaymentModal = ({ open, onClose }) => {
     const [form] = Form.useForm();
+    const dispatch = useDispatch();
+
+    const { loading, success, error } = useSelector(
+        (state) => state.payment
+    );
+    const { list: students, loading: studentsLoading } = useSelector(
+        (state) => state.users
+    );
+
+    const [fileList, setFileList] = useState([]);
+    const [previewUrl, setPreviewUrl] = useState("");
+
+    // Fetch students when modal opens
+    useEffect(() => {
+        if (open) dispatch(fetchStudents());
+    }, [open, dispatch]);
+
+    // Generate preview
+    useEffect(() => {
+        if (fileList.length > 0) {
+            setPreviewUrl(
+                URL.createObjectURL(fileList[0].originFileObj)
+            );
+        } else {
+            setPreviewUrl("");
+        }
+    }, [fileList]);
 
     const handleSubmit = (values) => {
-        console.log("Uploaded Payment:", values);
-        form.resetFields();
-        onClose();
+        const formData = new FormData();
+        formData.append("user", values.user);
+        formData.append("package", values.package);
+        formData.append("amount", values.amount);
+        formData.append("payment_type", values.paymentType);
+        formData.append("payment_method", values.paymentMethod);
+        formData.append(
+            "payment_date",
+            dayjs(values.paymentDate).format("YYYY-MM-DD")
+        );
+
+        if (values.transactionId) {
+            formData.append("transaction_id", values.transactionId);
+        }
+
+        if (fileList.length > 0) {
+            formData.append(
+                "receipt",
+                fileList[0].originFileObj
+            );
+        }
+
+        dispatch(submitPayment(formData));
     };
+
+    // Success / Error handling
+    useEffect(() => {
+        if (success) {
+            message.success("Payment submitted successfully");
+            form.resetFields();
+            setFileList([]);
+            setPreviewUrl("");
+            dispatch(resetPaymentState());
+            onClose();
+        }
+
+        if (error) {
+            message.error(error);
+        }
+    }, [success, error, dispatch, form, onClose]);
 
     return (
         <Modal
@@ -31,6 +103,7 @@ const UploadPaymentModal = ({ open, onClose }) => {
             title="Upload Payment"
             okText="Submit Payment"
             onOk={() => form.submit()}
+            confirmLoading={loading}
             width={600}
             centered
         >
@@ -38,59 +111,129 @@ const UploadPaymentModal = ({ open, onClose }) => {
                 form={form}
                 layout="vertical"
                 onFinish={handleSubmit}
+                onValuesChange={(changedValues) => {
+                    if (changedValues.paymentType) {
+                        form.setFieldsValue({
+                            paymentMethod: undefined,
+                            transactionId: undefined,
+                        });
+                    }
+                }}
             >
-                {/* Student */}
-                <Form.Item
-                    label="Select Student"
-                    name="student"
-                    rules={[{ required: true, message: "Please select student" }]}
-                >
-                    <Select placeholder="Select student">
-                        <Option value="Priya Sharma">Priya Sharma</Option>
-                        <Option value="Rajesh Kumar">Rajesh Kumar</Option>
-                        <Option value="Anjali Verma">Anjali Verma</Option>
-                    </Select>
-                </Form.Item>
+                {/* STUDENT */}
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            label="Select Student"
+                            name="user"
+                            rules={[
+                                { required: true, message: "Please select student" },
+                            ]}
+                        >
+                            <Select
+                                placeholder="Select student"
+                                loading={studentsLoading}
+                                showSearch
+                                optionFilterProp="children"
+                                onChange={(studentId) => {
+                                    const selectedStudent = students.find(
+                                        (s) => s.id === studentId
+                                    );
+
+                                    form.setFieldsValue({
+                                        package: selectedStudent?.package || "",
+                                    });
+                                }}
+                            >
+                                {students.map((student) => (
+                                    <Option key={student.id} value={student.id}>
+                                        {student.first_name} {student.last_name} (
+                                        {student.email})
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                    </Col>
+
+                    <Col span={12}>
+                        <Form.Item
+                            label="Package"
+                            name="package"
+                            rules={[
+                                { required: true, message: "Please select package" },
+                            ]}
+                        >
+                            <Select placeholder="Select package">
+                                <Option value="basic">Basic</Option>
+                                <Option value="standard">Standard</Option>
+                                <Option value="premium">Premium</Option>
+                            </Select>
+
+                        </Form.Item>
+                    </Col>
+                </Row>
 
                 <Row gutter={16}>
                     <Col span={12}>
-                        {/* Amount */}
                         <Form.Item
                             label="Amount Paid"
                             name="amount"
-                            rules={[{ required: true, message: "Enter amount" }]}
+                            rules={[{ required: true }]}
                         >
                             <Input placeholder="₹ Amount" />
                         </Form.Item>
                     </Col>
 
                     <Col span={12}>
-                        {/* Payment Method */}
                         <Form.Item
-                            label="Payment Method"
-                            name="paymentMethod"
+                            label="Payment Type"
+                            name="paymentType"
                             rules={[{ required: true }]}
                         >
-                            <Select placeholder="Select method">
-                                <Option value="UPI">UPI</Option>
-                                <Option value="Cash">Cash</Option>
-                                <Option value="Card">Card</Option>
-                                <Option value="Bank Transfer">Bank Transfer</Option>
+                            <Select placeholder="Select payment type">
+                                <Option value="online">Online</Option>
+                                <Option value="offline">Offline</Option>
                             </Select>
                         </Form.Item>
                     </Col>
                 </Row>
 
-                {/* Transaction ID */}
-                <Form.Item
-                    label="Transaction ID"
-                    name="transactionId"
-                    rules={[{ required: true, message: "Enter transaction ID" }]}
-                >
-                    <Input placeholder="Transaction ID" />
-                </Form.Item>
+                <Col span={12}>
+                    <Form.Item shouldUpdate>
+                        {({ getFieldValue }) => {
+                            const paymentType = getFieldValue("paymentType");
 
-                {/* Payment Date */}
+                            return (
+                                <Form.Item
+                                    label="Payment Method"
+                                    name="paymentMethod"
+                                    rules={[
+                                        { required: true, message: "Please select payment method" },
+                                    ]}
+                                >
+                                    <Select
+                                        placeholder={
+                                            paymentType
+                                                ? "Select payment method"
+                                                : "Select payment type first"
+                                        }
+                                        disabled={!paymentType}
+                                    >
+                                        {paymentType === "online" && (
+                                            <Option value="UPI">UPI</Option>
+                                        )}
+
+                                        {paymentType === "offline" && (
+                                            <Option value="Cash">Cash</Option>
+                                        )}
+                                    </Select>
+                                </Form.Item>
+                            );
+                        }}
+                    </Form.Item>
+                </Col>
+
+
                 <Form.Item
                     label="Payment Date"
                     name="paymentDate"
@@ -99,23 +242,64 @@ const UploadPaymentModal = ({ open, onClose }) => {
                     <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
 
-                {/* Upload Receipt */}
+                {/* RECEIPT UPLOAD */}
                 <Form.Item
-                    label="Upload Receipt / Screenshot"
+                    label="Upload Receipt"
                     name="receipt"
-                    valuePropName="fileList"
-                    getValueFromEvent={(e) => e?.fileList}
-                    rules={[{ required: true, message: "Upload receipt" }]}
+                    rules={[
+                        {
+                            required: true,
+                            message: "Please upload receipt",
+                        },
+                    ]}
                 >
-                    <Upload
-                        beforeUpload={() => false}
-                        maxCount={1}
-                        accept="image/*,.pdf"
+                    <div
+                        style={{
+                            display: "flex",
+                            gap: 16,
+                            alignItems: "center",
+                            border: "1px dashed #d9d9d9",
+                            padding: 16,
+                            borderRadius: 8,
+                            justifyContent: "space-between",
+                        }}
                     >
-                        <Button icon={<UploadOutlined />}>
-                            Upload File
-                        </Button>
-                    </Upload>
+                        {previewUrl ? (
+                            <img
+                                src={previewUrl}
+                                alt="Receipt Preview"
+                                style={{
+                                    width: 160,
+                                    height: 160,
+                                    objectFit: "cover",
+                                    borderRadius: 8,
+                                    border: "1px solid #d9d9d9",
+                                }}
+                            />
+                        ) : (
+                            <Empty description="No receipt uploaded" />
+                        )}
+
+                        <Upload
+                            beforeUpload={() => false}
+                            maxCount={1}
+                            fileList={fileList}
+                            showUploadList={false}
+                            onChange={({ fileList }) => {
+                                setFileList(fileList);
+                                form.setFieldsValue({
+                                    receipt: fileList,
+                                });
+                            }}
+                        >
+                            <Button
+                                type="primary"
+                                icon={<UploadOutlined />}
+                            >
+                                Upload Receipt
+                            </Button>
+                        </Upload>
+                    </div>
                 </Form.Item>
             </Form>
         </Modal>

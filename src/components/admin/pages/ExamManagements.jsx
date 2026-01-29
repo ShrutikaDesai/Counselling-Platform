@@ -274,7 +274,7 @@ const ExamManagements = () => {
   // ---------------- JSX ----------------
   return (
     <div style={{ padding: 16 }}>
-      <Title level={3}>Exam Management</Title>
+      <Title level={3}>User Request List</Title>
 
       <Card
         style={{

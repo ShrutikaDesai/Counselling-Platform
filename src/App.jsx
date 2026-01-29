@@ -36,6 +36,8 @@ import NotificationManagement from "./components/admin/pages/NotificationManagem
 import Profile from "./components/admin/pages/Profile";
 import ForgotPassword from "./components/admin/pages/ForgotPassword";
 import ResetPassword from "./components/admin/pages/ResetPassword";
+import ExamList from "./components/admin/pages/ExamList";
+
 
 
 
@@ -89,6 +91,8 @@ const App = () => {
           <Route path="followupManagement" element={<FollowUpManagement />} />
           <Route path="notificationManagement" element={<NotificationManagement />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="examlist" element={<ExamList />} />
+
        
           {/* <Route path="reset-password" element={<ResetPassword />} /> */}
 

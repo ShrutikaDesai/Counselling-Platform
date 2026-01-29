@@ -74,7 +74,8 @@ const AdminLayout = () => {
     "/admin/createslot":"Create Slot ",
     "/admin/followupManagement":"Follow Up Management",
     "/admin/contentManagement":"Content Management",
-    "/admin/examManagements":"Exam Management",
+    "/admin/examManagements":"User Request List",
+    "/admin/examlist":"Exam List",
     "/admin/employeeList":"Employee List",
     "/admin/notificationManagement":"Notification Management",
     "/admin/settings": "Settings",
@@ -147,42 +148,33 @@ const AdminLayout = () => {
       },
       style: { marginBottom: 12 },
     },
-    {
-      key: "/admin/examManagements",
-      icon: <CalendarFilled />,
-      label: "Exam Management",
-      onClick: () => {
-        navigate("/admin/examManagements");
-        setDrawerVisible(false);
-      },
-      style: { marginBottom: 12 },
-    },
-
    {
-  key: "slot-booking",
-  icon: <CalendarFilled />,
-  label: "Slot Booking",
-  children: [
-    {
-      key: "/admin/createslot",
-      icon: <PlusCircleFilled />,  
-      label: "Create Slot",
-      onClick: () => {
-        navigate("/admin/createslot");
-        setDrawerVisible(false);
+    key: "exam-management",
+    icon: <CalendarFilled />,
+    label: "Exam Management",
+    children: [
+      {
+        key: "/admin/examlist",
+        icon: <UnorderedListOutlined />,
+        label: "Exam List",
+        onClick: () => {
+          navigate("/admin/examlist");
+          setDrawerVisible(false);
+        },
       },
-    },
-    {
-      key: "/admin/slotbooking",
-      icon: <ClockCircleFilled />,
-      label: "Slot Booking",
-      onClick: () => {
-        navigate("/admin/slotbooking");
-        setDrawerVisible(false);
+      {
+        key: "/admin/examManagements",
+        icon: <SolutionOutlined />,
+        label: "User Request List",
+        onClick: () => {
+          navigate("/admin/examManagements");
+          setDrawerVisible(false);
+        },
       },
-    },
-],
-},
+    ],
+    style: { marginBottom: 12 },
+  },
+
 
  {
     key: "/admin/followupManagement",
@@ -218,36 +210,33 @@ const AdminLayout = () => {
       style: { marginBottom: 12 },
     },
 
-{
-  key: "employee-management",
-  icon: <TeamOutlined />,
-  label: "Employee Management",
-  children: [
-    {
-      key: "/admin/employeeList",
-      icon: <UnorderedListOutlined />, 
-      label: "Employee List",
-      onClick: () => {
-        navigate("/admin/employeeList");
-        setDrawerVisible(false);
+  {
+    key: "slot-booking",
+    icon: <CalendarFilled />,
+    label: "Slot Booking",
+    children: [
+      {
+        key: "/admin/createslot",
+        icon: <PlusCircleFilled />,  
+        label: "Create Slot",
+        onClick: () => {
+          navigate("/admin/createslot");
+          setDrawerVisible(false);
+        },
       },
-    },
-    //   {
-    //   key: "/admin/employees/roles",
-    //   icon: <SolutionOutlined />, 
-    //   label: "Employee Roles",
-    //   onClick: () => {
-    //     navigate("/admin/employees/roles");
-    //     setDrawerVisible(false);
-    //   },
-    // },
+      {
+        key: "/admin/slotbooking",
+        icon: <ClockCircleFilled />,
+        label: "Slot Booking",
+        onClick: () => {
+          navigate("/admin/slotbooking");
+          setDrawerVisible(false);
+        },
+      },
+    ],
+  },
 
-
-  ],
-  style: { marginBottom: 12 },
-},
-
- {
+{
     key: "/admin/notificationManagement",
     icon: <NotificationFilled />,
     label: "Notification Management",
@@ -362,10 +351,36 @@ const AdminLayout = () => {
 </div>
 
 
-  {/* MENU */}
-  <div style={{ flex: 1, padding: "10px 16px" }}>
-    {MenuContent}
-  </div>
+{/* MENU - scrollable with small width scrollbar */}
+<div
+  style={{
+    flex: 1,
+    overflowY: "auto",
+    padding: "10px 16px",
+    scrollbarWidth: "thin", // Firefox
+  }}
+>
+  {MenuContent}
+
+  <style>
+    {`
+      /* Chrome, Edge, Safari */
+      div::-webkit-scrollbar {
+        width: 6px;
+      }
+      div::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      div::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 3px;
+      }
+      div::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+    `}
+  </style>
+</div>
 
 
             <LogoutButton />

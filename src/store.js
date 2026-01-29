@@ -9,6 +9,11 @@ import enquiryListReducer from "./adminSlices/enquiryListSlice";
 import programReducer from "./adminSlices/programSlice";
 import userReducer from "./adminSlices/userSlice";
 import packageReducer from "./adminSlices/packageSlice";
+import paymentReducer from "./adminSlices/paymentSlice";
+import counsellingSlotReducer from "./adminSlices/counsellingSlotSlice";
+import counsellorReducer from "./adminSlices/counsellorSlice";
+import normalCounsellorReducer from "./adminSlices/normalCounsellorSlice";
+
 
 const store = configureStore({
   reducer: {
@@ -20,6 +25,11 @@ const store = configureStore({
         programs: programReducer, 
         users: userReducer,
         packages: packageReducer,
+        payment: paymentReducer,
+        counsellingSlots: counsellingSlotReducer,
+        counsellors: counsellorReducer,
+        normalCounsellors: normalCounsellorReducer,
+
   },
 });
 

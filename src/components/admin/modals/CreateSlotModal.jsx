@@ -1,3 +1,5 @@
+// src/components/admin/modals/CreateSlotModal.jsx
+
 import React, { useEffect } from "react";
 import {
   Modal,
@@ -10,116 +12,118 @@ import {
   Button,
   Row,
   Col,
+  Spin,
+  Alert,
 } from "antd";
 import { VideoCameraOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchLeadCounsellors } from "../../../adminSlices/counsellorSlice";
+import { fetchNormalCounsellors } from "../../../adminSlices/normalCounsellorSlice";
 
 const { Option } = Select;
 
-const counsellors = [
-  { id: 1, name: "Dr. Ramesh Gupta" },
-  { id: 2, name: "Ms. Priya Menon" },
-  { id: 3, name: "Dr. Neha Sharma" },
-];
-
-const CreateSlotModal = ({
-  open,
-  onCancel,
-  onCreate,
-  editingSlot,
-  mode = "create", // create | edit | view
-}) => {
+const CreateSlotModal = ({ open, onCancel, onCreate, editingSlot, mode = "create" }) => {
   const [form] = Form.useForm();
   const isView = mode === "view";
+  const dispatch = useDispatch();
 
-  // style for readonly behavior
-  const readOnlyStyle = isView
-    ? { pointerEvents: "none", background: "transparent" }
-    : {};
+  // Fetch lead and normal counsellors from Redux
+  const { list: leadCounsellors, loading: leadLoading, error } = useSelector(
+    (state) => state.counsellors
+  );
+  const { list: normalList, loading: normalLoading } = useSelector(
+    (state) => state.normalCounsellors
+  );
+  const normalCounsellors = Array.isArray(normalList) ? normalList : [];
 
+  // Fetch counsellors when modal opens
   useEffect(() => {
-    if (editingSlot) {
+    if (open) {
+      dispatch(fetchLeadCounsellors());
+      dispatch(fetchNormalCounsellors());
+    }
+  }, [dispatch, open]);
+
+  // Populate form when editing a slot
+  useEffect(() => {
+    if (editingSlot && leadCounsellors.length) {
       const lead = editingSlot.counsellors?.find((c) => c.type === "lead");
       const normal = editingSlot.counsellors?.find((c) => c.type === "normal");
 
-      const leadOption = counsellors.find((c) => c.name === lead?.name);
-      const normalOption = counsellors.find((c) => c.name === normal?.name);
+      const leadOption = leadCounsellors.find((c) => c.name === lead?.name);
+      const normalOption = normalCounsellors.find(
+        (c) => `${c.first_name} ${c.last_name}` === `${normal?.first_name} ${normal?.last_name}`
+      );
 
       form.setFieldsValue({
-        leadCounsellor: leadOption?.id,
-        normalCounsellor: normalOption?.id,
-        date: dayjs(editingSlot.date),
-        time: dayjs(editingSlot.time, "hh:mm A"),
-        mode: editingSlot.mode,
-        duration: editingSlot.duration,
+        lead_counsellor: leadOption?.id || undefined,
+        normalCounsellor: normalOption?.id || undefined,
+        date: editingSlot.date ? dayjs(editingSlot.date) : undefined,
+        time: editingSlot.start_time ? dayjs(editingSlot.start_time, "HH:mm:ss") : undefined,
+        mode: editingSlot.mode || "online",
+        duration: editingSlot.duration_minutes || 60,
       });
-    } else {
+    } else if (!editingSlot) {
       form.resetFields();
     }
-  }, [editingSlot, form]);
+  }, [editingSlot, leadCounsellors, normalCounsellors, form]);
 
-  const handleFinish = (values) => {
-    if (isView) return;
-    onCreate(values);
-    form.resetFields();
-  };
-
+  // Function to get modal title
   const getTitle = () => {
     if (mode === "view") return "View Counselling Slot";
     if (mode === "edit") return "Edit Counselling Slot";
     return "Create Counselling Slot";
   };
 
+
+
+  const readOnlyStyle = isView ? { pointerEvents: "none", background: "transparent" } : {};
+
   return (
-    <Modal
-      title={getTitle()}
-      open={open}
-      onCancel={onCancel}
-      destroyOnClose
-      footer={null}
-    >
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
+    <Modal title={getTitle()} open={open} onCancel={onCancel} destroyOnClose footer={null}>
+      {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}
+      <Form form={form} layout="vertical" onFinish={onCreate}>
         <Row gutter={16}>
           {/* Lead Counsellor */}
           <Col span={24}>
             <Form.Item
               label="Lead Counsellor"
-              name="leadCounsellor"
-              rules={
-                isView
-                  ? []
-                  : [{ required: true, message: "Please select lead counsellor" }]
-              }
+              name="lead_counsellor"
+              rules={isView ? [] : [{ required: true, message: "Please select lead counsellor" }]}
             >
-              <Select
-                placeholder="Select Lead Counsellor"
-                style={readOnlyStyle}
-                open={isView ? false : undefined}
-              >
-                {counsellors.map((c) => (
-                  <Option key={c.id} value={c.id}>
-                    {c.name}
-                  </Option>
-                ))}
-              </Select>
+              {leadLoading ? (
+                <Spin />
+              ) : (
+                <Select
+                  placeholder="Select Lead Counsellor"
+                  style={readOnlyStyle}
+                  open={isView ? false : undefined}
+                  loading={leadLoading}
+                >
+                  {leadCounsellors.map((c) => (
+                    <Option key={c.id} value={c.id}>
+                      {c.name}
+                    </Option>
+                  ))}
+                </Select>
+              )}
             </Form.Item>
           </Col>
 
           {/* Normal Counsellor */}
           <Col span={24}>
-            <Form.Item
-              label="Normal Counsellor (Optional)"
-              name="normalCounsellor"
-            >
+            <Form.Item label="Normal Counsellor (Optional)" name="normalCounsellor">
               <Select
                 allowClear
                 placeholder="Select Normal Counsellor"
                 style={readOnlyStyle}
                 open={isView ? false : undefined}
+                loading={normalLoading}
               >
-                {counsellors.map((c) => (
+                {normalCounsellors.map((c) => (
                   <Option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.first_name} {c.last_name}
                   </Option>
                 ))}
               </Select>
@@ -131,16 +135,9 @@ const CreateSlotModal = ({
             <Form.Item
               label="Date"
               name="date"
-              rules={
-                isView
-                  ? []
-                  : [{ required: true, message: "Please select date" }]
-              }
+              rules={isView ? [] : [{ required: true, message: "Please select date" }]}
             >
-              <DatePicker
-                style={{ width: "100%", ...readOnlyStyle }}
-                open={isView ? false : undefined}
-              />
+              <DatePicker style={{ width: "100%", ...readOnlyStyle }} open={isView ? false : undefined} />
             </Form.Item>
           </Col>
 
@@ -148,12 +145,8 @@ const CreateSlotModal = ({
           <Col span={12}>
             <Form.Item
               label="Time"
-              name="time"
-              rules={
-                isView
-                  ? []
-                  : [{ required: true, message: "Please select time" }]
-              }
+              name="start_time"
+              rules={isView ? [] : [{ required: true, message: "Please select time" }]}
             >
               <TimePicker
                 use12Hours
@@ -169,17 +162,13 @@ const CreateSlotModal = ({
             <Form.Item
               label="Session Mode"
               name="mode"
-              rules={
-                isView
-                  ? []
-                  : [{ required: true, message: "Please select session mode" }]
-              }
+              rules={isView ? [] : [{ required: true, message: "Please select session mode" }]}
             >
               <Radio.Group style={readOnlyStyle}>
-                <Radio.Button value="Online">
+                <Radio.Button value="online">
                   <VideoCameraOutlined /> Online
                 </Radio.Button>
-                <Radio.Button value="Offline">
+                <Radio.Button value="offline">
                   <EnvironmentOutlined /> Offline
                 </Radio.Button>
               </Radio.Group>
@@ -191,19 +180,9 @@ const CreateSlotModal = ({
             <Form.Item
               label="Duration (minutes)"
               name="duration"
-              rules={
-                isView
-                  ? []
-                  : [{ required: true, message: "Please enter duration" }]
-              }
+              rules={isView ? [] : [{ required: true, message: "Please enter duration" }]}
             >
-              <InputNumber
-                min={15}
-                step={15}
-                style={{ width: "100%" }}
-                readOnly={isView}   // ✅ true readonly support
-                placeholder="Enter duration"
-              />
+              <InputNumber min={15} step={15} style={{ width: "100%" }} readOnly={isView} placeholder="Enter duration" />
             </Form.Item>
           </Col>
 
@@ -211,10 +190,7 @@ const CreateSlotModal = ({
           <Col span={24}>
             <Form.Item>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                <Button onClick={onCancel}>
-                  {isView ? "Close" : "Cancel"}
-                </Button>
-
+                <Button onClick={onCancel}>{isView ? "Close" : "Cancel"}</Button>
                 {!isView && (
                   <Button type="primary" htmlType="submit">
                     {mode === "edit" ? "Update" : "Create"}

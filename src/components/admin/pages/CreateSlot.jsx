@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import {
   Card,
   Table,
@@ -24,6 +25,7 @@ import {
 import adminTheme from "../../../theme/adminTheme";
 import CreateSlotModal from "../modals/CreateSlotModal";
 import dayjs from "dayjs";
+import { createCounsellingSlot } from "../../../adminSlices/counsellingSlotSlice";
 
 const { token } = adminTheme;
 const { Title, Text } = Typography;
@@ -78,42 +80,40 @@ const CreateSlot = () => {
   const [searchText, setSearchText] = useState("");
   const [filterDate, setFilterDate] = useState(null);
   const [filterMode, setFilterMode] = useState(null);
+  const dispatch = useDispatch();
 
-  const handleCreate = (values) => {
-    const lead = counsellorsMaster.find((c) => c.id === values.leadCounsellor);
-    const normal = counsellorsMaster.find(
-      (c) => c.id === values.normalCounsellor
-    );
+  
+const handleCreate = (values) => {
 
-    const counsellors = [];
-    if (lead) counsellors.push({ name: lead.name, type: "lead" });
-    if (normal) counsellors.push({ name: normal.name, type: "normal" });
-
-    const slotData = {
-      counsellors,
-      date: values.date.format("YYYY-MM-DD"),
-      time: values.time.format("hh:mm A"),
-      mode: values.mode,
-      duration: values.duration,
-      status: "Available",
-    };
-
-    if (modalMode === "edit" && editingSlot) {
-      setSlots((prev) =>
-        prev.map((slot) =>
-          slot.key === editingSlot.key ? { ...slot, ...slotData } : slot
-        )
-      );
-      message.success("Slot updated successfully!");
-    } else {
-      setSlots((prev) => [{ key: Date.now(), ...slotData }, ...prev]);
-      message.success("Slot created successfully!");
-    }
-
-    setModalOpen(false);
-    setEditingSlot(null);
-    setModalMode("create");
+  const payload = {
+    lead_counsellor: values.lead_counsellor,
+    normal_counsellor: values.normalCounsellor || null,
+    date: values.date
+      ? dayjs.isDayjs(values.date)
+        ? values.date.format("YYYY-MM-DD")
+        : values.date
+      : null,
+    start_time: values.start_time
+      ? dayjs.isDayjs(values.start_time)
+        ? values.start_time.format("HH:mm:ss")
+        : values.start_time
+      : null,
+    mode: values.mode?.toLowerCase(),
+    duration_minutes: values.duration,
   };
+
+  dispatch(createCounsellingSlot(payload))
+    .unwrap()
+    .then(() => {
+      message.success("Slot created successfully");
+      setModalOpen(false);
+    })
+    .catch((err) => {
+      message.error(err || "Failed to create slot");
+    });
+};
+
+
 
   const handleEdit = (record) => {
     setEditingSlot(record);
@@ -291,17 +291,18 @@ const CreateSlot = () => {
         />
       </Card>
 
-      <CreateSlotModal
-        open={modalOpen}
-        editingSlot={editingSlot}
-        mode={modalMode}
-        onCancel={() => {
-          setModalOpen(false);
-          setEditingSlot(null);
-          setModalMode("create");
-        }}
-        onCreate={handleCreate}
-      />
+    <CreateSlotModal
+  open={modalOpen}
+  editingSlot={editingSlot}
+  mode={modalMode}
+  onCancel={() => {
+    setModalOpen(false);
+    setEditingSlot(null);
+    setModalMode("create");
+  }}
+  onCreate={handleCreate}
+/>
+
     </div>
   );
 };
