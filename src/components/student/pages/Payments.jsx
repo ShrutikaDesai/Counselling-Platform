@@ -187,7 +187,7 @@ const Payments = () => {
           dataSource={invoiceData}
           pagination={false}
           size={isMobile ? "small" : "middle"}
-          scroll={{ x: 700 }}
+            scroll={{ x: "max-content" }}
         />
       </Card>
     </div>

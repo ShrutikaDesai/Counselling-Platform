@@ -1,32 +1,43 @@
-// src/components/modals/EditProfileModal.js
 import React, { useEffect } from "react";
-import { Modal, Form, Input, Select, Button, message } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { Modal, Form, Input, Select, Button, Row, Col, message } from "antd";
+import { updateProfile } from "../../../adminSlices/profileSlice";
 
 const { Option } = Select;
 
-const EditProfileModal = ({ visible, onClose, userData, onSave }) => {
+const EditProfileModal = ({ visible, onClose, userData }) => {
   const [form] = Form.useForm();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.profile);
 
-  // Reset form when modal opens
   useEffect(() => {
-    if (visible) {
+    if (visible && userData) {
       form.setFieldsValue({
-        name: userData.name,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
         email: userData.email,
-        mobile: userData.mobile,
+        phone: userData.phone,
         role: userData.role,
       });
     }
   }, [visible, userData, form]);
 
-  const handleSave = async () => {
+  const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
-      onSave(values); // call parent to update data
-      message.success("Profile updated successfully!");
+
+      const payload = {
+        first_name: values.first_name,
+        last_name: values.last_name,
+        phone: values.phone,
+      };
+
+      await dispatch(updateProfile(payload)).unwrap();
+
+      message.success("Profile updated successfully");
       onClose();
     } catch (err) {
-      console.log("Validation Failed:", err);
+      message.error(err?.message || "Validation failed");
     }
   };
 
@@ -39,52 +50,98 @@ const EditProfileModal = ({ visible, onClose, userData, onSave }) => {
         <Button key="cancel" onClick={onClose}>
           Cancel
         </Button>,
-        <Button key="save" type="primary" onClick={handleSave}>
-          Save
+        <Button
+          key="update"
+          type="primary"
+          onClick={handleUpdate}
+          loading={loading}
+        >
+          Update
         </Button>,
       ]}
       centered
     >
       <Form form={form} layout="vertical">
-        <Form.Item
-          label="Name"
-          name="name"
-          rules={[{ required: true, message: "Please enter your name" }]}
-        >
-          <Input placeholder="Enter name" />
-        </Form.Item>
+        {/* First & Last Name */}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="First Name"
+              name="first_name"
+              rules={[
+                { required: true, message: "First name is required" },
+                {
+                  pattern: /^[A-Za-z\s]+$/,
+                  message: "Only letters are allowed",
+                },
+                {
+                  min: 2,
+                  message: "Minimum 2 characters required",
+                },
+              ]}
+            >
+              <Input placeholder="Enter first name" />
+            </Form.Item>
+          </Col>
 
+          <Col span={12}>
+            <Form.Item
+              label="Last Name"
+              name="last_name"
+              rules={[
+                { required: true, message: "Last name is required" },
+                {
+                  pattern: /^[A-Za-z\s]+$/,
+                  message: "Only letters are allowed",
+                },
+                {
+                  min: 2,
+                  message: "Minimum 2 characters required",
+                },
+              ]}
+            >
+              <Input placeholder="Enter last name" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* Email (Disabled but validated) */}
         <Form.Item
           label="Email"
           name="email"
           rules={[
-            { required: true, message: "Please enter your email" },
-            { type: "email", message: "Please enter a valid email" },
+            {
+              type: "email",
+              message: "Enter a valid email address",
+            },
           ]}
         >
-          <Input placeholder="Enter email" />
+          <Input disabled />
         </Form.Item>
 
+        {/* Mobile Number */}
         <Form.Item
           label="Mobile Number"
-          name="mobile"
-          rules={[{ required: true, message: "Please enter your mobile number" }]}
+          name="phone"
+          rules={[
+            { required: true, message: "Mobile number is required" },
+            {
+              pattern: /^[6-9]\d{9}$/,
+              message: "Enter a valid 10-digit mobile number",
+            },
+          ]}
         >
-          <Input placeholder="Enter mobile number" />
+          <Input maxLength={10} placeholder="Enter mobile number" />
         </Form.Item>
 
-<Form.Item
-  label="Role"
-  name="role"
-  rules={[{ required: true, message: "Please select role" }]}
->
-  <Select placeholder="Select role" disabled>
-    <Option value="Admin">Admin</Option>
-    <Option value="User">Superadmin</Option>
-    <Option value="Manager">Counsellor</Option>
-  </Select>
-</Form.Item>
-
+        {/* Role (Disabled) */}
+        <Form.Item label="Role" name="role">
+          <Select disabled>
+            <Option value="Admin">Admin</Option>
+            <Option value="Superadmin">Superadmin</Option>
+            <Option value="Counsellor">Counsellor</Option>
+          </Select>
+        </Form.Item>
       </Form>
     </Modal>
   );

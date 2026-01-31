@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Modal,
   Form,
@@ -10,8 +11,11 @@ import {
   Space,
   Typography,
   ConfigProvider,
+  message
 } from "antd";
 import dayjs from "dayjs";
+import { bookCounsellingSlot } from "../../../adminSlices/counsellingBookingSlice";
+import { fetchStudents } from "../../../adminSlices/userSlice";
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -43,8 +47,18 @@ const CreateSessionModal = ({
   const [form] = Form.useForm();
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [filter, setFilter] = useState("All");
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.counsellingBooking);
+  const { list: students, loading: studentsLoading } = useSelector((state) => state.users || {});
 
   const isView = mode === "view";
+
+
+  useEffect(() => {
+  if (visible) {
+    dispatch(fetchStudents());
+  }
+}, [visible, dispatch]);
 
   useEffect(() => {
     if (sessionData) {
@@ -62,23 +76,38 @@ const CreateSessionModal = ({
     }
   }, [sessionData, form]);
 
-  const handleOk = () => {
-    form.validateFields().then(values => {
-      onSave({
-        user: values.student,
-        counsellors: [
-          { name: values.leadCounsellor, type: "lead" },
-          ...(values.normalCounsellor ? [{ name: values.normalCounsellor, type: "normal" }] : []),
-        ],
-        date: values.date.format("YYYY-MM-DD"),
-        time: selectedSlot + " (60 mins)",
-        mode: values.mode,
-        status: "Scheduled",
-      });
-      onClose();
-    });
-  };
+const handleOk = () => {
+  form.validateFields().then((values) => {
+    const payload = {
+      user: values.student,
+      counsellors: [
+        { name: values.leadCounsellor, type: "lead" },
+        ...(values.normalCounsellor
+          ? [{ name: values.normalCounsellor, type: "normal" }]
+          : []),
+      ],
+      date: values.date.format("YYYY-MM-DD"),
+      start_time: selectedSlot, // backend-friendly
+      duration_minutes: 60,
+      mode: values.mode,
+    };
 
+    dispatch(bookCounsellingSlot(payload))
+      .unwrap()
+      .then(() => {
+        message.success("Counselling session booked successfully");
+        onSave({
+          ...payload,
+          time: selectedSlot + " (60 mins)",
+          status: "Scheduled",
+        });
+        onClose();
+      })
+      .catch((err) => {
+        message.error(err?.message || "Booking failed");
+      });
+  });
+};
   const displayedSlots = timeSlots.filter(slot => {
     if (filter === "All") return true;
     const isBooked = bookedSlots.includes(slot);
@@ -113,9 +142,15 @@ const CreateSessionModal = ({
             ? [<Button key="close" onClick={onClose}>Close</Button>]
             : [
                 <Button key="cancel" onClick={onClose}>Cancel</Button>,
-                <Button key="submit" type="primary" onClick={handleOk} disabled={!selectedSlot}>
-                  Confirm Booking
-                </Button>,
+               <Button
+  key="submit"
+  type="primary"
+  loading={loading}
+  onClick={handleOk}
+  disabled={!selectedSlot}
+>
+  Confirm Booking
+</Button>
               ]
         }
       >
@@ -123,11 +158,31 @@ const CreateSessionModal = ({
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item label="Student Name" name="student" rules={[{ required: true }]}>
-                <Select disabled={isView}>
-                  <Option value="Shruti Patil">Shruti Patil</Option>
-                  <Option value="Amit Joshi">Amit Joshi</Option>
-                  <Option value="Neha Sharma">Neha Sharma</Option>
-                </Select>
+<Select
+  disabled={isView}
+  loading={studentsLoading}
+  showSearch
+  optionFilterProp="label"
+  placeholder="Select student"
+>
+  {students?.map((student) => {
+    const fullName = `${student.first_name} ${student.last_name}`;
+    return (
+      <Option
+        key={student.id}
+        value={student.id}   // ✅ what gets submitted
+        label={`${fullName} ${student.email}`} // ✅ used for search
+      >
+        <div>
+          <Text>{fullName}</Text>
+          <div style={{ fontSize: 12 }}>
+            {student.email}
+          </div>
+        </div>
+      </Option>
+    );
+  })}
+</Select>
               </Form.Item>
             </Col>
 

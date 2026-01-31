@@ -31,15 +31,65 @@ const adminTheme = {
 
   components: {
 
-    Menu: {
-      itemBorderRadius: 10,
-      itemSelectedBg: "#EEF2FF",
-      itemSelectedColor: "#1E40AF",
-      itemHoverBg: "#F1F5F9",
-      itemColor: "#E0E7FF",
-      darkItemSelectedBg: "#FFFFFF",
-      darkItemSelectedColor: "#1E40AF",
-    },
+    // Menu: {
+    //   itemBorderRadius: 10,
+    //   itemSelectedBg: "#EEF2FF",
+    //   itemSelectedColor: "#1E40AF",
+    //   itemHoverBg: "#F1F5F9",
+    //   itemColor: "#E0E7FF",
+    //   darkItemSelectedBg: "#FFFFFF",
+    //   darkItemSelectedColor: "#1E40AF",
+    // },
+
+
+//     Menu: {
+//   itemBorderRadius: 10,
+
+//   /* Normal items */
+//   itemColor: "#E0E7FF",               // default text
+//   itemHoverColor: "#FFFFFF",
+//   itemHoverBg: "rgba(255,255,255,0.12)",
+
+//   /* Selected item */
+//   itemSelectedBg: "rgba(255,255,255,0.18)",
+//   itemSelectedColor: "#FFFFFF",
+
+//   /* Submenu (Exam Management) */
+//   subMenuItemSelectedColor: "#FFFFFF",
+
+//   /* Dark mode fixes (VERY IMPORTANT for sidebar) */
+//   darkItemColor: "#E0E7FF",
+//   darkItemHoverColor: "#FFFFFF",
+//   darkItemSelectedColor: "#FFFFFF",
+//   darkItemSelectedBg: "rgba(255,255,255,0.18)",
+// },
+
+
+Menu: {
+  itemBorderRadius: 10,
+
+  /* Normal items */
+  itemColor: "#E0E7FF",
+  itemHoverColor: "#FFFFFF",
+  itemHoverBg: "rgba(255,255,255,0.12)",
+
+  /* Selected CHILD item */
+  itemSelectedBg: "#FFFFFF",        // white bg
+  itemSelectedColor: "#1E40AF",     // blue text
+
+  /* 🔒 IMPORTANT: Parent submenu title */
+  subMenuItemSelectedColor: "#FFFFFF", // KEEP parent WHITE
+
+  /* Dark sidebar fixes */
+  darkItemColor: "#E0E7FF",
+  darkItemHoverColor: "#FFFFFF",
+
+  /* Child selected */
+  darkItemSelectedColor: "#1E40AF", // blue text
+  darkItemSelectedBg: "#FFFFFF",    // white bg
+},
+
+
 
 
     Button: {

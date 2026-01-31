@@ -147,8 +147,10 @@ const UploadPaymentModal = ({ open, onClose }) => {
                             >
                                 {students.map((student) => (
                                     <Option key={student.id} value={student.id}>
-                                        {student.first_name} {student.last_name} (
-                                        {student.email})
+                                        {student.first_name} {student.last_name} 
+                                        <div style={{ fontSize: 12 }}>
+            {student.email}
+          </div>
                                     </Option>
                                 ))}
                             </Select>

@@ -28,6 +28,17 @@ const CreateSlotModal = ({ open, onCancel, onCreate, editingSlot, mode = "create
   const isView = mode === "view";
   const dispatch = useDispatch();
 
+
+  useEffect(() => {
+  if (open) {
+    dispatch(fetchLeadCounsellors());
+    dispatch(fetchNormalCounsellors());
+  }
+}, [open, dispatch]);
+
+
+
+
   // Fetch lead and normal counsellors from Redux
   const { list: leadCounsellors, loading: leadLoading, error } = useSelector(
     (state) => state.counsellors
@@ -37,37 +48,35 @@ const CreateSlotModal = ({ open, onCancel, onCreate, editingSlot, mode = "create
   );
   const normalCounsellors = Array.isArray(normalList) ? normalList : [];
 
-  // Fetch counsellors when modal opens
-  useEffect(() => {
-    if (open) {
-      dispatch(fetchLeadCounsellors());
-      dispatch(fetchNormalCounsellors());
+ // Populate form when editing a slot - FIXED
+useEffect(() => {
+  if (!editingSlot) {
+    form.resetFields();
+    return;
+  }
+
+  if (!leadLoading && !normalLoading && leadCounsellors.length) {
+    const leadId = editingSlot.lead_counsellor?.id;
+    const normalId = editingSlot.normal_counsellor?.id;
+
+    let parsedTime;
+    if (editingSlot.start_time) {
+      parsedTime = dayjs(editingSlot.start_time, "hh:mm A");
+      if (!parsedTime.isValid()) parsedTime = dayjs(editingSlot.start_time, "HH:mm");
     }
-  }, [dispatch, open]);
 
-  // Populate form when editing a slot
-  useEffect(() => {
-    if (editingSlot && leadCounsellors.length) {
-      const lead = editingSlot.counsellors?.find((c) => c.type === "lead");
-      const normal = editingSlot.counsellors?.find((c) => c.type === "normal");
+    form.setFieldsValue({
+      lead_counsellor: leadId || undefined,
+      normalCounsellor: normalId || undefined,
+      date: editingSlot.date ? dayjs(editingSlot.date) : undefined,
+      start_time: parsedTime || undefined,
+      mode: editingSlot.mode || "online",
+      duration: editingSlot.duration_minutes || 60,
+    });
+  }
+}, [editingSlot, leadCounsellors, normalCounsellors, leadLoading, normalLoading, form]);
 
-      const leadOption = leadCounsellors.find((c) => c.name === lead?.name);
-      const normalOption = normalCounsellors.find(
-        (c) => `${c.first_name} ${c.last_name}` === `${normal?.first_name} ${normal?.last_name}`
-      );
 
-      form.setFieldsValue({
-        lead_counsellor: leadOption?.id || undefined,
-        normalCounsellor: normalOption?.id || undefined,
-        date: editingSlot.date ? dayjs(editingSlot.date) : undefined,
-        time: editingSlot.start_time ? dayjs(editingSlot.start_time, "HH:mm:ss") : undefined,
-        mode: editingSlot.mode || "online",
-        duration: editingSlot.duration_minutes || 60,
-      });
-    } else if (!editingSlot) {
-      form.resetFields();
-    }
-  }, [editingSlot, leadCounsellors, normalCounsellors, form]);
 
   // Function to get modal title
   const getTitle = () => {

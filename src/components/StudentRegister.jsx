@@ -277,7 +277,7 @@ const StudentRegister = () => {
                     color: "#1890ff",
                     textDecoration: "underline",
                   }}
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate("/")}
                 >
                   Login
                 </Text>

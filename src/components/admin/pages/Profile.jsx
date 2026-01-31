@@ -1,29 +1,48 @@
-import React, { useState } from "react";
-import { Card, Row, Col, Typography, Avatar, Button, Space } from "antd";
-import { UserOutlined, EditOutlined, MailOutlined, PhoneOutlined, CalendarOutlined, SafetyOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  Card,
+  Row,
+  Col,
+  Typography,
+  Avatar,
+  Button,
+  Space,
+  Spin,
+} from "antd";
+import {
+  UserOutlined,
+  EditOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  CalendarOutlined,
+  SafetyOutlined,
+} from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
 import EditProfileModal from "../modals/EditProfileModal";
+import { getProfile } from "../../../adminSlices/profileSlice";
 
 const { Title, Text } = Typography;
 
 const Profile = () => {
-  const [user, setUser] = useState({
-    name: "Rajesh Kumar",
-    email: "rajesh.kumar@example.com",
-    mobile: "+91 9876543210",
-    role: "Admin",
-    joined: "2025-08-12",
-  });
+  const dispatch = useDispatch();
+  const { profile, loading } = useSelector((state) => state.profile);
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
-  const handleSave = (updatedData) => {
-    setUser((prev) => ({ ...prev, ...updatedData }));
-  };
+  // ✅ Fetch profile on load
+  useEffect(() => {
+    dispatch(getProfile());
+  }, [dispatch]);
+
+  // ✅ Loading state
+  if (loading || !profile) {
+    return <Spin fullscreen />;
+  }
 
   return (
     <div style={{ padding: 16, minHeight: "100vh" }}>
-      <Title level={2} style={{ marginBottom: 24, textAlign: "left" }}>
+      <Title level={2} style={{ marginBottom: 24 }}>
         My Profile
       </Title>
 
@@ -34,7 +53,6 @@ const Profile = () => {
               borderRadius: adminTheme.token.borderRadius,
               boxShadow: adminTheme.token.boxShadow,
               overflow: "hidden",
-              transition: "all 0.3s",
             }}
             bodyStyle={{ padding: 0 }}
           >
@@ -54,20 +72,22 @@ const Profile = () => {
                 icon={<UserOutlined />}
                 style={{
                   border: `4px solid ${adminTheme.token.colorBgContainer}`,
-                  backgroundColor: "#000000",
+                  backgroundColor: "#000",
                   marginBottom: 16,
                 }}
               />
+
               <Title level={3} style={{ color: "#fff", marginBottom: 4 }}>
-                {user.name}
+                {profile.first_name} {profile.last_name}
               </Title>
-              <Text style={{ color: "#E0E7FF", fontSize: 16 }}>{user.role}</Text>
+
+              <Text style={{ color: "#E0E7FF", fontSize: 16 }}>
+                {profile.role}
+              </Text>
 
               <Space style={{ marginTop: 16 }}>
                 <Button
-                  type="default"
                   icon={<EditOutlined />}
-                  style={{ borderRadius: 8 }}
                   onClick={() => setIsEditModalVisible(true)}
                 >
                   Edit
@@ -75,46 +95,40 @@ const Profile = () => {
               </Space>
             </div>
 
-            {/* Info Section */}
-            <div
-              style={{
-                padding: 24,
-                background: adminTheme.token.colorBgContainer,
-                textAlign: "left",
-              }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12}>
-                  <Text strong>
-                    <MailOutlined /> Email:
-                  </Text>
-                  <br />
-                  <Text>{user.email}</Text>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Text strong>
-                    <PhoneOutlined /> Mobile Number:
-                  </Text>
-                  <br />
-                  <Text>{user.mobile}</Text>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Text strong>
-                    <CalendarOutlined /> Joined:
-                  </Text>
-                  <br />
-                  <Text>{new Date(user.joined).toLocaleDateString()}</Text>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Text strong>
-                    <SafetyOutlined /> Role:
-                  </Text>
-                  <br />
-                  <Text>{user.role}</Text>
-                </Col>
-              </Row>
-            </div>
-          </Card>
+
+{/* Info Section */}
+<div style={{ padding: 24 }}>
+  <Row gutter={[16, 16]}>
+    <Col xs={24} sm={24}>
+      <Text strong>
+        <MailOutlined /> Email:
+      </Text>
+      <Text style={{ marginLeft: 8 }}>
+        {profile.email}
+      </Text>
+    </Col>
+
+    {/* Full width */}
+    <Col xs={24} sm={24}>
+      <Text strong>
+        <PhoneOutlined /> Mobile Number:
+      </Text>
+      <Text style={{ marginLeft: 8 }}>
+        {profile.phone}
+      </Text>
+    </Col>
+
+    <Col xs={24} sm={12}>
+      <Text strong>
+        <SafetyOutlined /> Role:
+      </Text>
+      <Text style={{ marginLeft: 8 }}>
+        {profile.role}
+      </Text>
+    </Col>
+  </Row>
+</div>
+   </Card>
         </Col>
       </Row>
 
@@ -122,8 +136,7 @@ const Profile = () => {
       <EditProfileModal
         visible={isEditModalVisible}
         onClose={() => setIsEditModalVisible(false)}
-        userData={user}
-        onSave={handleSave}
+        userData={profile}   // ✅ Redux data
       />
     </div>
   );

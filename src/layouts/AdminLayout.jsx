@@ -37,6 +37,8 @@ import {
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import adminTheme from "../theme/adminTheme";
 import NotificationDropdown from "../components/student/pages/Notification";
+import { s, style } from "framer-motion/client";
+import { color } from "chart.js/helpers";
 
 const { Header, Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -176,29 +178,6 @@ const AdminLayout = () => {
   },
 
 
- {
-    key: "/admin/followupManagement",
-    icon: <PhoneFilled />,   
-    label: "Follow-Up Management",
-    onClick: () => {
-      navigate("/admin/followupManagement");
-      setDrawerVisible(false);
-    },
-    style: { marginBottom: 12 },
-  },
-
-{
-  key: "/admin/content-management",
-  icon: <BookFilled />,
-  label: "Content Management",
-  onClick: () => {
-    navigate("/admin/contentManagement");
-    setDrawerVisible(false);
-  },
-  style: { marginBottom: 12 },
-},
-
-
     {
       key: "/admin/reportsmanagement",
       icon: <FileTextFilled />,
@@ -210,6 +189,8 @@ const AdminLayout = () => {
       style: { marginBottom: 12 },
     },
 
+
+    
   {
     key: "slot-booking",
     icon: <CalendarFilled />,
@@ -235,6 +216,30 @@ const AdminLayout = () => {
       },
     ],
   },
+ {
+    key: "/admin/followupManagement",
+    icon: <PhoneFilled />,   
+    label: "Follow-Up Management",
+    onClick: () => {
+      navigate("/admin/followupManagement");
+      setDrawerVisible(false);
+    },
+    style: { marginBottom: 12 },
+  },
+
+{
+  key: "/admin/content-management",
+  icon: <BookFilled />,
+  label: "Content Management",
+  onClick: () => {
+    navigate("/admin/contentManagement");
+    setDrawerVisible(false);
+  },
+  style: { marginBottom: 12 },
+},
+
+
+
 
 {
     key: "/admin/notificationManagement",
@@ -246,6 +251,25 @@ const AdminLayout = () => {
     },
     style: { marginBottom: 12 },
   },
+
+{
+  key: "employee-management",
+  icon: <TeamOutlined />,
+  label: "Employee Management",
+  children: [
+    {
+      key: "/admin/employeeList",
+      icon: <UnorderedListOutlined />,
+      label: "Employee List",
+      onClick: () => {
+        navigate("/admin/employeeList");
+        setDrawerVisible(false);
+      },
+    },
+  ],
+},
+
+
   
     // {
     //   key: "/admin/settings",
@@ -263,17 +287,22 @@ const AdminLayout = () => {
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminName");
-    navigate("/admin/login", { replace: true });
+    navigate("/admin-login", { replace: true });
     setDrawerVisible(false);
   };
 
   const MenuContent = (
     <Menu
-      mode="inline"
-      items={menuItems}
-      selectedKeys={[location.pathname]}
-      style={{ background: "transparent", border: "none" }}
-    />
+  mode="inline"
+  items={menuItems}
+  selectedKeys={[location.pathname]}
+  style={{
+    background: "transparent",
+    border: "none",
+    color: "#fff",
+  }}
+  className="admin-sidebar-menu"
+/>
   );
 
   const userMenu = {

@@ -62,7 +62,7 @@ export const deleteCounsellingSlot = createAsyncThunk(
 /* -------------------- SLICE -------------------- */
 
 const counsellingSlotSlice = createSlice({
-  name: "counsellingSlot",
+  name: "counsellingSlots",
   initialState: {
     list: [],
     loading: false,
@@ -94,7 +94,22 @@ const counsellingSlotSlice = createSlice({
 
       // FETCH
       .addCase(fetchCounsellingSlots.fulfilled, (state, action) => {
-        state.list = action.payload;
+        const payload = action.payload?.data || [];
+
+        state.list = payload.map(slot => ({
+          ...slot,
+          counsellors: [
+            slot.lead_counsellor
+              ? { ...slot.lead_counsellor, type: "lead", name: slot.lead_counsellor.first_name }
+              : null,
+            slot.normal_counsellor
+              ? { ...slot.normal_counsellor, type: "normal", name: slot.normal_counsellor.first_name }
+              : null,
+          ].filter(Boolean) // remove nulls
+        }));
+
+        state.loading = false;
+        state.error = null;
       })
 
       // UPDATE

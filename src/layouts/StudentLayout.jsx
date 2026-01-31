@@ -167,7 +167,7 @@ export default function StudentLayout() {
   const handleLogout = () => {
     localStorage.removeItem("studentToken");
     localStorage.removeItem("username");
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
     setDrawerVisible(false);
   };
 
