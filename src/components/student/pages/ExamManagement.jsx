@@ -22,7 +22,7 @@ import {
   InfoCircleOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
-import antdTheme from "../../../theme/antdTheme";
+import adminTheme from "../../../theme/adminTheme";
 import StatusTrackingModal from "../modals/StatusTrackingModal";
 import InstructionsModal from "../modals/InstructionsModal";
 
@@ -43,7 +43,7 @@ const ExamManagement = () => {
           <Title level={2} style={{ marginBottom: 6 }}>
             Career Assessment Test
           </Title>
-          <Text type="secondary" style={{ fontSize: 15 }}>
+          <Text type="colorTextSecondary" style={{ fontSize: 15 }}>
             Discover your strengths, interests, and ideal career path
           </Text>
         </div>
@@ -253,7 +253,7 @@ const ExamManagement = () => {
                   </Button>
 
                   <Text
-                    type="secondary"
+                    type="colorTextSecondary"
                     style={{
                       display: "block",
                       textAlign: "center",
@@ -273,7 +273,7 @@ const ExamManagement = () => {
   };
 
   return (
-    <ConfigProvider theme={antdTheme}>
+    <ConfigProvider theme={adminTheme}>
       <PageContent />
       
       {/* Imported Modals */}

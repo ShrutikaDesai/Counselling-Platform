@@ -393,6 +393,7 @@ const Program = () => {
         position: "relative", 
         marginTop: screens.xs ? 16 : 20,
         padding: screens.xs ? "0 36px" : "0 46px" // Add padding for arrows
+        
       }}>
         {/* LEFT ARROW - Always show if there's content to scroll */}
         <Button
@@ -621,7 +622,7 @@ const Program = () => {
                   >
                     {pkg.price}
                   </Title>
-                  <Text type="secondary" style={{ fontSize: screens.xs ? "13px" : "14px" }}>
+                  <Text type="colorTextSecondary" style={{ fontSize: screens.xs ? "13px" : "14px" }}>
                     one-time
                   </Text>
 

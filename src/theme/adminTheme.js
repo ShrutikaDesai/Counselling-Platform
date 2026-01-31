@@ -89,9 +89,11 @@ Menu: {
   darkItemSelectedBg: "#FFFFFF",    // white bg
 },
 
-
-
-
+Input: {
+  // borderRadius: 10,
+  disabledBg: "#F5F5F5", // light grey background for disabled
+  disabledColor: "#A1A1AA", // grey text
+},
     Button: {
       borderRadius: 10,
       controlHeight: 40,

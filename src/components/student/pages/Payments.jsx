@@ -132,7 +132,7 @@ const Payments = () => {
       {/* PAGE TITLE */}
       <div style={{ textAlign: "center" }}>
         <Title level={isMobile ? 4 : 3}>Payments</Title>
-        <Text type="secondary" style={{ fontSize: isMobile ? 12 : 14 }}>
+        <Text type="colorTextSecondary" style={{ fontSize: isMobile ? 12 : 14 }}>
           View your payment status, pending dues and invoices
         </Text>
       </div>

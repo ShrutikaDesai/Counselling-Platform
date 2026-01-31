@@ -10,7 +10,7 @@ import {
   CrownOutlined,
 } from "@ant-design/icons";
 import EditProfileModal from "../modals/EditProfileModal";
-import antdTheme from "../../../theme/antdTheme";
+import adminTheme from "../../../theme/adminTheme";
 
 const { Title, Text } = Typography;
 
@@ -52,7 +52,7 @@ const StudentProfile = () => {
       <Card
         bordered={false}
         style={{
-          background: antdTheme.token.colorPrimary,
+          background: adminTheme.token.colorPrimary,
           color: "#fff",
           marginBottom: 0,
         }}
@@ -106,7 +106,7 @@ const StudentProfile = () => {
             <div style={infoItemStyle}>
               <MailOutlined style={{ color: "#1677ff", fontSize: 18 }} />
               <div>
-                <Text type="secondary">Email</Text>
+                <Text type="colorTextSecondary">Email</Text>
                 <br />
                 <Text strong>{profile.email}</Text>
               </div>
@@ -115,7 +115,7 @@ const StudentProfile = () => {
             <div style={infoItemStyle}>
               <PhoneOutlined style={{ color: "#1677ff", fontSize: 18 }} />
               <div>
-                <Text type="secondary">Phone</Text>
+                <Text type="colorTextSecondary">Phone</Text>
                 <br />
                 <Text strong>{profile.phone}</Text>
               </div>
@@ -124,7 +124,7 @@ const StudentProfile = () => {
             <div style={infoItemStyle}>
               <CalendarOutlined style={{ color: "#1677ff", fontSize: 18 }} />
               <div>
-                <Text type="secondary">Date of Birth</Text>
+                <Text type="colorTextSecondary">Date of Birth</Text>
                 <br />
                 <Text strong>{profile.dob}</Text>
               </div>
@@ -135,7 +135,7 @@ const StudentProfile = () => {
             <div style={infoItemStyle}>
               <BookOutlined style={{ color: "#1677ff", fontSize: 18 }} />
               <div>
-                <Text type="secondary">Program</Text>
+                <Text type="colorTextSecondary">Program</Text>
                 <br />
                 <Text strong>{profile.program}</Text>
               </div>
@@ -144,7 +144,7 @@ const StudentProfile = () => {
             <div style={infoItemStyle}>
               <CrownOutlined style={{ color: "#faad14", fontSize: 18 }} />
               <div>
-                <Text type="secondary">Package</Text>
+                <Text type="colorTextSecondary">Package</Text>
                 <br />
                 <Text strong>{profile.package}</Text>
               </div>
@@ -153,7 +153,7 @@ const StudentProfile = () => {
             <div style={infoItemStyle}>
               <UserOutlined style={{ color: "#1677ff", fontSize: 18 }} />
               <div>
-                <Text type="secondary">Joined On</Text>
+                <Text type="colorTextSecondary">Joined On</Text>
                 <br />
                 <Text strong>{profile.joinedOn}</Text>
               </div>

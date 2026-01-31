@@ -149,7 +149,7 @@ const handleDownload = (item) => {
       {/* HEADER */}
       <div style={{ textAlign: "center", marginBottom: 32 }}>
         <Title level={2}>Content Library</Title>
-        <Text type="secondary">
+        <Text type="colorTextSecondary">
           Explore free, basic and premium learning resources
         </Text>
       </div>
@@ -260,7 +260,7 @@ const handleDownload = (item) => {
               {/* CONTENT */}
               <div style={{ marginTop: 16 }}>
                 <Title level={5}>{item.title}</Title>
-                <Text type="secondary">{item.description}</Text>
+                <Text type="colorTextSecondary">{item.description}</Text>
 
                 <div style={{ marginTop: 12, gap: 8, display: "flex", flexWrap: "wrap" }}>
                   <Tag color={programColors[item.program]}>
@@ -290,7 +290,7 @@ const handleDownload = (item) => {
             <Title level={4} style={{ marginTop: 12 }}>
               No content found
             </Title>
-            <Text type="secondary">
+            <Text type="colorTextSecondary">
               Try adjusting filters to explore content
             </Text>
           </Col>

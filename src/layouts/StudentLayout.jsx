@@ -11,7 +11,7 @@ import {
   Dropdown,
   Space,
   Badge,
-  ConfigProvider,
+  theme,
 } from "antd";
 import {
   UserOutlined,
@@ -27,7 +27,6 @@ import {
   CreditCardFilled,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
-import antdTheme from "../theme/antdTheme";
 import NotificationDropdown from "../components/student/pages/Notification";
 
 const { Header, Sider, Content } = Layout;
@@ -40,6 +39,8 @@ export default function StudentLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const screens = useBreakpoint();
+  const { token } = theme.useToken();
+
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const username = localStorage.getItem("username") || "Student";
@@ -62,7 +63,6 @@ export default function StudentLayout() {
     },
   ]);
 
-  // compute unread count
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   /* ===================== BREADCRUMB ===================== */
@@ -78,6 +78,7 @@ export default function StudentLayout() {
     "/student/payments":"Payments"
   };
 
+
   const pathSnippets = location.pathname.split("/").filter(Boolean);
   const extraBreadcrumbItems = pathSnippets.map((_, index) => {
     const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
@@ -90,7 +91,7 @@ export default function StudentLayout() {
   const breadcrumbItems = [{ key: "/student/dashboard", title: ".." }, ...extraBreadcrumbItems.slice(1)];
 
   /* ===================== MENU ITEMS ===================== */
-  const menuItems = [
+ const menuItems = [
     {
       key: "/student/dashboard",
       icon: <DashboardFilled />,
@@ -164,11 +165,11 @@ export default function StudentLayout() {
 
   ];
 
+
   const handleLogout = () => {
     localStorage.removeItem("studentToken");
     localStorage.removeItem("username");
     navigate("/", { replace: true });
-    setDrawerVisible(false);
   };
 
   const MenuContent = (
@@ -177,6 +178,7 @@ export default function StudentLayout() {
       items={menuItems}
       selectedKeys={[location.pathname]}
       style={{ background: "transparent", border: "none" }}
+      onClick={() => setDrawerVisible(false)}
     />
   );
 
@@ -188,7 +190,7 @@ export default function StudentLayout() {
         label: "Profile",
         onClick: () => navigate("/student/student-profile"),
       },
-   ],
+    ],
   };
 
   const LogoutButton = ({ isMobile }) => (
@@ -196,13 +198,13 @@ export default function StudentLayout() {
       <Button
         type="primary"
         icon={<LogoutOutlined />}
-        onClick={handleLogout}
         block
+        onClick={handleLogout}
         style={{
-          background: antdTheme.token.colorPrimary,
-          borderColor: antdTheme.token.colorPrimary,
           height: 40,
-          borderRadius: 10,
+          color: token.colorPrimary,
+          borderRadius: token.borderRadius,
+          backgroundColor: "#FFFFFF",
         }}
       >
         Logout
@@ -211,24 +213,27 @@ export default function StudentLayout() {
   );
 
   return (
-
-  <ConfigProvider theme={antdTheme}>
-    <Layout style={{ minHeight: "100vh" }}>
-      {/* ===================== FIXED SIDEBAR ===================== */}
-      {!screens.xs && ( 
-        <Sider
-          width={SIDEBAR_WIDTH}
-          style={{
-            background: antdTheme.token.colorBgContainer,
-            position: "fixed",
-            left: 0,
-            top: 0,
-            bottom: 0,
-          }}
-        >
+    <Layout style={{ minHeight: "100vh", background: token.colorBgLayout }}>
+      {/* ===================== SIDEBAR ===================== */}
+      {!screens.xs && (
+       <Sider
+  width={SIDEBAR_WIDTH}
+  style={{
+    background: token.colorPrimary, // 🔥 DARK BLUE
+    position: "fixed",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    boxShadow: token.boxShadow,
+  }}
+>
           <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <h2 style={{ textAlign: "center", padding: 16, margin: 0 }}>Student Panel</h2>
-            <div style={{ flex: 1, padding: "10px 16px" }}>{MenuContent}</div>
+            <h2 style={{ textAlign: "center", padding: 16, margin: 0 , color: "#FFFFFF" }}>
+              Student Panel
+            </h2>
+
+            <div style={{ flex: 1, padding: "8px 12px"  }}>{MenuContent}</div>
+
             <LogoutButton />
           </div>
         </Sider>
@@ -241,23 +246,23 @@ export default function StudentLayout() {
           placement="right"
           open={drawerVisible}
           onClose={() => setDrawerVisible(false)}
-          bodyStyle={{ padding: 0, display: "flex", flexDirection: "column", height: "100%" }}
+          bodyStyle={{ padding: 0, display: "flex", flexDirection: "column" }}
         >
           <div style={{ flex: 1, padding: 16 }}>{MenuContent}</div>
           <LogoutButton isMobile />
         </Drawer>
       )}
 
-      {/* ===================== MAIN LAYOUT ===================== */}
+      {/* ===================== MAIN ===================== */}
       <Layout style={{ marginLeft: screens.xs ? 0 : SIDEBAR_WIDTH }}>
         <Header
           style={{
-            background: antdTheme.token.colorBgContainer,
+            background: token.colorBgContainer,
             padding: "0 16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            boxShadow: antdTheme.token.boxShadow,
+            boxShadow: token.boxShadow,
             position: "sticky",
             top: 0,
             zIndex: 10,
@@ -266,7 +271,7 @@ export default function StudentLayout() {
           <Breadcrumb items={breadcrumbItems} />
 
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {/* 🔔 NOTIFICATIONS */}
+            {/* 🔔 Notifications */}
             <Dropdown
               trigger={["click"]}
               dropdownRender={() => (
@@ -276,20 +281,18 @@ export default function StudentLayout() {
                 />
               )}
             >
-              <span>
-                <Badge count={unreadCount} size="small">
-                  <BellOutlined style={{ fontSize: 20, cursor: "pointer" }} />
-                </Badge>
-              </span>
+              <Badge count={unreadCount} size="small">
+                <BellOutlined style={{ fontSize: 20, cursor: "pointer" }} />
+              </Badge>
             </Dropdown>
 
-            {/* 👤 USER */}
+            {/* 👤 User */}
             <Dropdown menu={userMenu} trigger={["click"]}>
               <Space style={{ cursor: "pointer" }}>
                 <Text strong>{username}</Text>
                 <Avatar
                   icon={<UserOutlined />}
-                  style={{ backgroundColor: antdTheme.token.colorPrimary }}
+                  style={{ background: token.colorPrimary }}
                 />
               </Space>
             </Dropdown>
@@ -309,13 +312,12 @@ export default function StudentLayout() {
             margin: 16,
             padding: 16,
             background: "#eeeeef",
-            borderRadius: 12,
+            borderRadius: token.borderRadius,
           }}
         >
           <Outlet />
         </Content>
       </Layout>
     </Layout>
-    </ConfigProvider>
   );
 }

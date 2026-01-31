@@ -127,7 +127,7 @@ const SlotBookingList = () => {
                       {session.counsellor}
                     </Text>
                     <br />
-                    <Text type="secondary">{session.role}</Text>
+                    <Text type="colorTextSecondary">{session.role}</Text>
                   </div>
                 </Space>
               </Col>
@@ -150,7 +150,7 @@ const SlotBookingList = () => {
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
               <Col xs={24} sm={12} md={6}>
                 <Card bordered={false} style={{ background: "#f9fafb" }}>
-                  <Text type="secondary">Date</Text>
+                  <Text type="colorTextSecondary">Date</Text>
                   <br />
                   <Text strong>
                     <CalendarOutlined /> {session.date}
@@ -160,7 +160,7 @@ const SlotBookingList = () => {
 
               <Col xs={24} sm={12} md={6}>
                 <Card bordered={false} style={{ background: "#f9fafb" }}>
-                  <Text type="secondary">Time</Text>
+                  <Text type="colorTextSecondary">Time</Text>
                   <br />
                   <Text strong>
                     <ClockCircleOutlined /> {session.time}
@@ -170,7 +170,7 @@ const SlotBookingList = () => {
 
               <Col xs={24} sm={12} md={6}>
                 <Card bordered={false} style={{ background: "#f9fafb" }}>
-                  <Text type="secondary">Mode</Text>
+                  <Text type="colorTextSecondary">Mode</Text>
                   <br />
                   <Text strong>
                     <VideoCameraOutlined /> {session.mode}
@@ -180,7 +180,7 @@ const SlotBookingList = () => {
 
               <Col xs={24} sm={12} md={6}>
                 <Card bordered={false} style={{ background: "#f9fafb" }}>
-                  <Text type="secondary">Duration</Text>
+                  <Text type="colorTextSecondary">Duration</Text>
                   <br />
                   <Text strong>{session.duration}</Text>
                 </Card>

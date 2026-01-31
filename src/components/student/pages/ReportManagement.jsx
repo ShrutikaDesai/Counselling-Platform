@@ -100,7 +100,7 @@ const ReportCard = ({ locked, fileUrl }) => {
           <div style={{ textAlign: "center" }}>
             <FilePdfOutlined style={{ fontSize: 46, color: "#9ca3af" }} />
             <Text style={{ display: "block", marginTop: 8 }}>PDF Preview</Text>
-            <Text type="secondary">32 pages</Text>
+            <Text type="colorTextSecondary">32 pages</Text>
           </div>
         )}
       </div>
@@ -116,12 +116,12 @@ const ReportCard = ({ locked, fileUrl }) => {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <CalendarOutlined style={{ color: "#6b7280" }} />
-          <Text type="secondary">07 Jan 2026</Text>
+          <Text type="colorTextSecondary">07 Jan 2026</Text>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <InfoCircleOutlined style={{ color: "#6b7280" }} />
-          <Text type="secondary">2.4 MB</Text>
+          <Text type="colorTextSecondary">2.4 MB</Text>
         </div>
       </div>
 
@@ -196,7 +196,7 @@ const ReportManagement = () => {
       }}
     >
       <Title level={2}>My Reports</Title>
-      <Text type="secondary">View and download your assessment reports</Text>
+      <Text type="colorTextSecondary">View and download your assessment reports</Text>
 
       <Divider />
 

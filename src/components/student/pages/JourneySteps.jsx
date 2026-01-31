@@ -16,20 +16,19 @@ const Journeysteps = ({ currentStep = 1 }) => {
         Your Journey Progress
       </Title>
 
-      <Steps
-        current={currentStep}
-        labelPlacement="vertical"
-        size="default"
-        items={[
-          { title: "Registration" },
-          { title: "Package Selection" },
-          { title: "Payment" },
-          { title: "Exam" },
-          { title: "Report" },
-          { title: "Counselling" },
-          { title: "Full Access" },
-        ]}
-      />
+<Steps
+  current={currentStep}
+  labelPlacement="vertical"
+  items={[
+    { title: <span style={{ color: "#0F172A" }}>Registration</span> },
+    { title: <span style={{ color: "#0F172A" }}>Package Selection</span> },
+    { title: <span style={{ color: "#0F172A" }}>Payment</span> },
+    { title: <span style={{ color: "#0F172A" }}>Exam</span> },
+    { title: <span style={{ color: "#0F172A" }}>Report</span> },
+    { title: <span style={{ color: "#0F172A" }}>Counselling</span> },
+    { title: <span style={{ color: "#0F172A" }}>Full Access</span> },
+  ]}
+/>
     </Card>
   );
 };

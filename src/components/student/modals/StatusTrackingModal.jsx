@@ -109,7 +109,7 @@ const StatusTrackingModal = ({ open, onClose }) => {
               </Text>
               <br />
               <Text
-                type="secondary"
+                type="colorTextSecondary"
                 style={{
                   fontSize: 13,
                   display: "block",
@@ -153,7 +153,7 @@ const StatusTrackingModal = ({ open, onClose }) => {
           </div>
 
           <Text
-            type="secondary"
+            type="colorTextSecondary"
             style={{
               display: "block",
               marginTop: 8,

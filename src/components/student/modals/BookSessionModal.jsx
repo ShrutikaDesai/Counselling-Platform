@@ -104,7 +104,7 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
           : "Book Counselling Session"}
       </Title>
 
-      <Text type="secondary">
+      <Text type="colorTextSecondary">
         {rescheduleData
           ? "Update your session date and time"
           : "Select your preferred date, counsellor and time slot"}
@@ -253,7 +253,7 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
                   type={
                     slotFilter === "all"
                       ? "primary"
-                      : "secondary"
+                      : "colorTextSecondary"
                   }
                 >
                   All
@@ -282,7 +282,7 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
                   type={
                     slotFilter === "available"
                       ? "primary"
-                      : "secondary"
+                      : "colorTextSecondary"
                   }
                 >
                   Available
@@ -311,7 +311,7 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
                   type={
                     slotFilter === "booked"
                       ? "primary"
-                      : "secondary"
+                      : "colorTextSecondary"
                   }
                 >
                   Booked
@@ -338,7 +338,7 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
                 <div>
                   <Text strong>Assigned Counsellor</Text>
                   <br />
-                  <Text type="secondary">
+                  <Text type="colorTextSecondary">
                     {selectedCounsellorData?.name || "Not selected"}
                   </Text>
                   {selectedCounsellorData && (
@@ -360,7 +360,7 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
                   <div>
                     <Text strong>Additional Counsellor</Text>
                     <br />
-                    <Text type="secondary">
+                    <Text type="colorTextSecondary">
                       {selectedNormalCounsellor}
                     </Text>
                     <div style={{ marginTop: 4 }}>
@@ -375,13 +375,13 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
               <Divider />
 
               <div>
-                <Text type="secondary">Mode</Text>
+                <Text type="colorTextSecondary">Mode</Text>
                 <br />
                 <Tag color="blue">{mode.toUpperCase()}</Tag>
               </div>
 
               <div>
-                <Text type="secondary">Selected Slot</Text>
+                <Text type="colorTextSecondary">Selected Slot</Text>
                 <br />
                 <Text strong>
                   {selectedSlot || "Not selected"}
@@ -389,7 +389,7 @@ const BookSessionModal = ({ rescheduleData, closeModal }) => {
               </div>
 
               <div>
-                <Text type="secondary">Duration</Text>
+                <Text type="colorTextSecondary">Duration</Text>
                 <br />
                 <Text strong>60 Minutes</Text>
               </div>
