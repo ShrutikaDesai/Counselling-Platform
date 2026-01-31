@@ -26,3 +26,9 @@ export const updateProgramApi = async (id, payload) => {
   );
   return response.data;
 };
+
+// Get Program Stats API
+export const getProgramStatsApi = async () => {
+  const response = await axiosInstance.get("/program-package/dashboard/counts/");
+  return response.data; 
+};

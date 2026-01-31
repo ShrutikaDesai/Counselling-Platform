@@ -296,6 +296,7 @@ const filteredData = users.filter((user) => {
               return [newUser, ...prev];
             }
           });
+            dispatch(fetchStudents());
           setAddEditModalOpen(false);
         }}
       />

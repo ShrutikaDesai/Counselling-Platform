@@ -13,7 +13,7 @@ import {
 } from "@ant-design/icons";
 import AddProgramModal from "../modals/AddProgramModal";
 import AddPackageModal from "../modals/AddPackageModal";
-import { fetchPrograms } from "../../../adminSlices/programSlice";
+import { fetchPrograms ,fetchProgramStats} from "../../../adminSlices/programSlice";
 import { fetchPackages, createPackage, updatePackage } from "../../../adminSlices/packageSlice";
 
 
@@ -22,11 +22,13 @@ const { Title, Text } = Typography;
 const Programs = () => {
   const dispatch = useDispatch();
   const { list: programData, loading } = useSelector((state) => state.programs);
+  const { stats } = useSelector((state) => state.programs);
 
-  React.useEffect(() => {
-    dispatch(fetchPrograms());
-    dispatch(fetchPackages());
-  }, [dispatch]);
+React.useEffect(() => {
+  dispatch(fetchPrograms());
+  dispatch(fetchPackages());
+  dispatch(fetchProgramStats()); // 🔥 fetch stats for dashboard cards
+}, [dispatch]);
 
 
   const [activeTab, setActiveTab] = useState("programs");
@@ -38,24 +40,13 @@ const Programs = () => {
   const { list: packageData } = useSelector((state) => state.packages);
 
 
+const statsCards = [
+  { title: "Total Programs", value: stats?.total_programs || 0, icon: <ReadOutlined /> },
+  { title: "Total Packages", value: stats?.total_packages || 0, icon: <BookOutlined /> },
+  { title: "Total Enrolled", value: stats?.total_enrolled_students || 0, icon: <TeamOutlined /> },
+  { title: "Revenue (Monthly)", value: `₹${stats?.revenue || 0}`, icon: <DollarOutlined /> },
+];
 
-  // const [programData, setProgramData] = useState([
-  //   { key: 1, name: "Engineering Career Path", duration: "3 Months", sessions: 12, users: 45, description: "Engineering guidance" },
-  //   { key: 2, name: "Medical Career Guidance", duration: "2 Months", sessions: 8, users: 54, description: "Medical guidance" },
-  // ]);
-  // const [packageData, setPackageData] = useState([
-  //   { key: 1, name: "Basic", program: "Engineering Career Path", price: "₹10,000", users: 45 },
-  //   { key: 2, name: "Standard", program: "Engineering Career Path", price: "₹15,000", users: 68 },
-  //   { key: 3, name: "Premium", program: "Engineering Career Path", price: "₹25,000", users: 32 },
-  //   { key: 4, name: "Standard", program: "Medical Career Guidance", price: "₹18,000", users: 54 },
-  // ]);
-
-  const stats = [
-    { title: "Total Programs", value: programData.length, icon: <ReadOutlined style={{ color: "#4F46E5" }} /> },
-    { title: "Total Packages", value: packageData.length, icon: <BookOutlined style={{ color: "#4F46E5" }} /> },
-    { title: "Total Enrolled", value: programData.reduce((a, b) => a + b.users, 0), icon: <TeamOutlined style={{ color: "#16A34A" }} /> },
-    { title: "Revenue (Monthly)", value: "₹8.2L", icon: <DollarOutlined style={{ color: "#16A34A" }} /> },
-  ];
 
   const programColumns = [
     {
@@ -197,7 +188,7 @@ const Programs = () => {
 
       {/* Stats Cards */}
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        {stats.map((item, index) => (
+        {statsCards.map((item, index) => (
           <Col xs={24} sm={12} md={12} lg={6} key={index}>
             <Card hoverable style={{ borderRadius: 16, textAlign: "center" }} bodyStyle={{ padding: 16 }}>
               <Text style={{ fontSize: 14, color: "#6B7280" }}>{item.title}</Text>

@@ -20,9 +20,12 @@ import {
   EyeOutlined,
   EditOutlined,
   SearchOutlined,
+  CheckCircleOutlined,
+  FileSyncOutlined,
 } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
 import ViewReportModal from "../modals/ViewReportModal";
+import VerifyReviewModal from "../modals/VerifyReviewModal";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -31,7 +34,7 @@ const { Option } = Select;
 const stats = [
   {
     title: "Total Reports",
-    value: 142,
+    value: 156,
     icon: <FileOutlined style={{ color: adminTheme.token.colorPrimary }} />,
   },
   {
@@ -48,6 +51,11 @@ const stats = [
     title: "Pending Upload",
     value: 8,
     icon: <UploadOutlined style={{ color: adminTheme.token.colorWarning }} />,
+  },
+  {
+    title: "Review Pending",
+    value: 14,
+    icon: <FileSyncOutlined style={{ color: adminTheme.token.colorInfo }} />,
   },
 ];
 
@@ -75,10 +83,10 @@ const reportData = [
     key: 3,
     name: "Anjali Verma",
     program: "MBA Preparation",
-    status: "Locked",
-    paymentStatus: "Verification Pending",
-    examStatus: "Pending",
-    uploadedDate: "-",
+    status: "Review Verification Pending",
+    paymentStatus: "Fully Paid",
+    examStatus: "Completed",
+    uploadedDate: "2026-01-15",
   },
   {
     key: 4,
@@ -89,6 +97,42 @@ const reportData = [
     examStatus: "Not Started",
     uploadedDate: "-",
   },
+  {
+    key: 5,
+    name: "Sneha Patel",
+    program: "Law Career Guidance",
+    status: "Review Verification Pending",
+    paymentStatus: "Fully Paid",
+    examStatus: "Completed",
+    uploadedDate: "2026-01-18",
+  },
+  {
+    key: 6,
+    name: "Rahul Mehta",
+    program: "Data Science Career",
+    status: "Review Verification Pending",
+    paymentStatus: "Fully Paid",
+    examStatus: "Completed",
+    uploadedDate: "2026-01-20",
+  },
+  {
+    key: 7,
+    name: "Kavita Nair",
+    program: "Design Thinking",
+    status: "Unlocked",
+    paymentStatus: "Fully Paid",
+    examStatus: "Completed",
+    uploadedDate: "2026-01-12",
+  },
+  {
+    key: 8,
+    name: "Amit Joshi",
+    program: "Research Methodology",
+    status: "Review Verification Pending",
+    paymentStatus: "Partial Paid",
+    examStatus: "Completed",
+    uploadedDate: "2026-01-22",
+  },
 ];
 
 /* ----------------- COLOR MAPS ----------------- */
@@ -96,6 +140,7 @@ const statusColorMap = {
   Unlocked: adminTheme.token.colorSuccess,
   Locked: adminTheme.token.colorError,
   "Pending Upload": adminTheme.token.colorWarning,
+  "Review Verification Pending": adminTheme.token.colorInfo,
 };
 
 const paymentStatusColorMap = {
@@ -115,6 +160,7 @@ const statusIconMap = {
   Unlocked: <UnlockOutlined />,
   Locked: <LockOutlined />,
   "Pending Upload": <UploadOutlined />,
+  "Review Verification Pending": <FileSyncOutlined />,
 };
 
 /* ----------------- COMPONENT ----------------- */
@@ -129,6 +175,9 @@ const ReportsManagement = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [paymentFilter, setPaymentFilter] = useState(null);
   const [examFilter, setExamFilter] = useState(null);
+
+  const [verifyModalOpen, setVerifyModalOpen] = useState(false);
+
 
   /* -------- FILTER LOGIC -------- */
   const filteredData = useMemo(() => {
@@ -150,13 +199,20 @@ const ReportsManagement = () => {
     });
   }, [searchText, statusFilter, paymentFilter, examFilter]);
 
+  /* ----------------- HANDLE VERIFY REVIEW ----------------- */
+  const handleVerifyReview = (record) => {
+    message.success(`Review verified for ${record.name}`);
+    // In real app, you would update the status in backend here
+    // For demo, we'll just show a success message
+  };
+
   /* ----------------- TABLE COLUMNS ----------------- */
   const columns = [
     {
       title: "Sr. No",
       key: "srno",
-      render: (_, __, index) => index + 1, // auto serial number
-      responsive: ["xs", "sm", "md", "lg", "xl"], // responsive column
+      render: (_, __, index) => index + 1,
+      responsive: ["xs", "sm", "md", "lg", "xl"],
     },
     {
       title: "Student Name",
@@ -231,6 +287,35 @@ const ReportsManagement = () => {
             >
               Upload
             </Button>
+          ) : record.status === "Review Verification Pending" ? (
+            <>
+              <Button
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  setSelectedReport(record);
+                  setModalMode("view");
+                  setOpenViewModal(true);
+                }}
+              >
+                View
+              </Button>
+              <Button
+                type="primary"
+                icon={<CheckCircleOutlined />}
+                style={{
+                  backgroundColor: adminTheme.token.colorSuccess,
+                  borderColor: adminTheme.token.colorSuccess,
+                }}
+                onClick={() => {
+                  setSelectedReport(record);
+                  setVerifyModalOpen(true);
+                }}
+              >
+                Verify Review
+              </Button>
+
+
+            </>
           ) : (
             <>
               <Button
@@ -243,7 +328,6 @@ const ReportsManagement = () => {
               >
                 View
               </Button>
-
               <Button
                 icon={<EditOutlined />}
                 onClick={() => {
@@ -268,7 +352,6 @@ const ReportsManagement = () => {
       message.warning("Please select at least one report to upload.");
       return;
     }
-    // Pass selected rows to modal
     const selectedReports = filteredData.filter((item) =>
       selectedRowKeys.includes(item.key)
     );
@@ -293,7 +376,7 @@ const ReportsManagement = () => {
       {/* ----------------- STATS ----------------- */}
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         {stats.map((stat, index) => (
-          <Col xs={24} sm={12} md={6} key={index}>
+          <Col xs={24} sm={12} md={6} lg={4.8} key={index}>
             <Card style={{ textAlign: "center" }}>
               <Text>{stat.title}</Text>
               <div style={{ fontSize: 24, marginTop: 8 }}>{stat.icon}</div>
@@ -325,6 +408,9 @@ const ReportsManagement = () => {
               <Option value="Unlocked">Unlocked</Option>
               <Option value="Locked">Locked</Option>
               <Option value="Pending Upload">Pending Upload</Option>
+              <Option value="Review Verification Pending">
+                Review Verification Pending
+              </Option>
             </Select>
           </Col>
 
@@ -368,7 +454,7 @@ const ReportsManagement = () => {
               }
               block
             >
-              Bulk Upload 
+              Bulk Upload
             </Button>
           </Col>
         </Row>
@@ -393,6 +479,16 @@ const ReportsManagement = () => {
         data={selectedReport}
         mode={modalMode}
       />
+
+      <VerifyReviewModal
+        open={verifyModalOpen}
+        onCancel={() => setVerifyModalOpen(false)}
+        reviewData={selectedReport}
+        onVerify={(data) => {
+          message.success(`Review verified & report unlocked for ${data.name}`);
+        }}
+      />
+
     </div>
   );
 };

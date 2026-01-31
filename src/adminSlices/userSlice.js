@@ -2,60 +2,49 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../axiosInstance";
 import { addUserApi } from "../adminApi/userApi";
 
-// ================= THUNKS =================
+/* ===================== THUNKS ===================== */
+
+// ADD USER
 export const addUser = createAsyncThunk(
   "users/addUser",
   async (payload, { rejectWithValue }) => {
     try {
       const data = await addUserApi(payload);
-      return data;
+      return data; // { message, data }
     } catch (error) {
-      return rejectWithValue(error.response?.data);
+      return rejectWithValue(error.response?.data || "Failed to add user");
     }
   }
 );
 
+// FETCH STUDENTS
 export const fetchStudents = createAsyncThunk(
-  "students/fetchAll",
+  "users/fetchStudents",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/only-students/");
-      
-      // Handle different possible response structures
-      let students = [];
-      if (Array.isArray(response.data)) {
-        students = response.data;
-      } else if (response.data?.data && Array.isArray(response.data.data)) {
-        students = response.data.data;
-      } else if (response.data?.students && Array.isArray(response.data.students)) {
-        students = response.data.students;
-      } else if (response.data?.users && Array.isArray(response.data.users)) {
-        students = response.data.users;
-      }
-      
-      return students;
+      return response.data.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch students"
-      );
+      return rejectWithValue("Failed to fetch students");
     }
   }
 );
 
-// In THUNKS section
+// DELETE USER
 export const deleteUser = createAsyncThunk(
   "users/deleteUser",
   async (userId, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.delete(`/users/${userId}/`);
-      return response.data;
+      await axiosInstance.delete(`/users/${userId}/`);
+      return userId;
     } catch (error) {
-      return rejectWithValue(error.response?.data);
+      return rejectWithValue(error.response?.data || "Delete failed");
     }
   }
 );
 
-// ================= SLICE =================
+/* ===================== SLICE ===================== */
+
 const userSlice = createSlice({
   name: "users",
   initialState: {
@@ -65,6 +54,7 @@ const userSlice = createSlice({
     success: false,
     successMessage: null,
   },
+
   reducers: {
     resetUserState: (state) => {
       state.loading = false;
@@ -73,79 +63,133 @@ const userSlice = createSlice({
       state.successMessage = null;
     },
   },
- extraReducers: (builder) => {
-  builder
-    // ================= FETCH STUDENTS =================
-    .addCase(fetchStudents.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
 
-    .addCase(fetchStudents.fulfilled, (state, action) => {
-      state.loading = false;
+  extraReducers: (builder) => {
+    builder
+      /* ---------- FETCH STUDENTS ---------- */
+      .addCase(fetchStudents.pending, (state) => {
+        state.loading = true;
+      })
+.addCase(fetchStudents.fulfilled, (state, action) => {
+  state.loading = false;
 
-      state.list = action.payload.map(user => ({
-        id: user.id,
-        key: user.id,
-        first_name: user.first_name || "",
-        last_name: user.last_name || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        program: user.program?.name || "",
-        package: user.package?.name || "",
-        paymentStatus: user.payment_status || "Verification Pending",
-        paymentAmount: user.payment_amount || "₹0",
-        examStatus: user.exam_status || "Pending",
-        reportStatus: user.report_status || "Locked",
-        sessions: user.sessions || "0/0",
-      }));
-    })
+  // Map users
+  const mappedUsers = action.payload.map((u) => ({
+    key: u.id,
+    id: u.id,
+    first_name: u.first_name || "",
+    last_name: u.last_name || "",
+    student_name: u.student_name || "",
+    email: u.email || "",
+    phone: u.phone || "",
+    study_class: u.study_class || "",
+    current_academic_stage: u.current_academic_stage || "",
+    city: u.city || "",
 
-    .addCase(fetchStudents.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    })
+    program: u.program_name || "N/A",
+    package: u.package_name || "N/A",
 
-    // ================= ADD USER =================
-    .addCase(addUser.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-      state.success = false;
-    })
+    paymentStatus: u.payment_status
+      ? u.payment_status
+          .split("_")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")
+      : "N/A",
 
-    .addCase(addUser.fulfilled, (state, action) => {
-      state.loading = false;
-      state.success = true;
-      state.successMessage = action.payload.message;
+    examStatus: u.exam_status?.completed > 0 ? "Completed" : "Pending",
+reportStatus: u.is_report_locked ? "Unlocked" : "Locked",
+    sessions: u.exam_status
+      ? Object.values(u.exam_status).reduce((sum, val) => sum + val, 0)
+      : "0",
 
-      const user = action.payload.data;
+    profile: {
+      email: u.email || "",
+      phone: u.phone || "",
+      study_class: u.study_class || "",
+      current_academic_stage: u.current_academic_stage || "",
+      city: u.city || "",
+      program_name: u.program_name || "",
+      package_name: u.package_name || "",
+      payment_status: u.payment_status || "",
+    },
+  }));
 
-      const newUser = {
-        id: user.id,
-        key: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        phone: user.phone,
-        program: user.program?.name || "",
-        package: user.package?.name || "",
-        paymentStatus: "Verification Pending",
-        paymentAmount: "₹0",
-        examStatus: "Pending",
-        reportStatus: "Locked",
-        sessions: "0/0",
-      };
+  // 🔥 Ensure newest users appear at the top
+  state.list = mappedUsers.reverse(); // or sort by ID descending: mappedUsers.sort((a, b) => b.id - a.id)
+})
 
-      state.list.unshift(newUser);
-    })
+      .addCase(fetchStudents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
-    .addCase(addUser.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-      state.success = false;
-    });
-}
+      /* ---------- ADD USER ---------- */
+      .addCase(addUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.successMessage = action.payload.message;
 
+        const u = action.payload.data;
+
+        const newUser = {
+          key: u.id,
+          id: u.id,
+          first_name: u.first_name || "",
+          last_name: u.last_name || "",
+          student_name: u.student_name || "",
+          email: u.email || "",
+          phone: u.phone || "",
+          study_class: u.study_class || "",
+          current_academic_stage: u.current_academic_stage || "",
+          city: u.city || "",
+
+          // FIXED: Access program_name and package_name directly
+          program: u.program_name || "N/A",
+          package: u.package_name || "N/A",
+
+          paymentStatus: u.payment_status 
+            ? u.payment_status.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ')
+            : "N/A",
+            
+          examStatus: u.exam_status?.completed > 0 ? "Completed" : "Pending",
+          reportStatus: u.is_report_locked ? "Locked" : "Unlocked",
+          sessions: u.exam_status 
+            ? Object.values(u.exam_status).reduce((sum, val) => sum + val, 0)
+            : "0",
+            
+          profile: {
+            email: u.email || "",
+            phone: u.phone || "",
+            study_class: u.study_class || "",
+            current_academic_stage: u.current_academic_stage || "",
+            city: u.city || "",
+            program_name: u.program_name || "",
+            package_name: u.package_name || "",
+            payment_status: u.payment_status || ""
+          }
+        };
+
+        // Add new user at top
+        state.list.unshift(newUser);
+      })
+      .addCase(addUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ---------- DELETE USER ---------- */
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.list = state.list.filter(
+          (user) => user.id !== action.payload
+        );
+      });
+  },
 });
 
 export const { resetUserState } = userSlice.actions;

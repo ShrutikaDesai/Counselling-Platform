@@ -15,7 +15,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import adminTheme from "../../../theme/adminTheme";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import AddEnquiryModal from "../modals/AddEnquiryModal";
 import { fetchEnquiries } from "../../../adminSlices/enquiryListSlice";
 
@@ -164,26 +164,50 @@ const Enquiry = () => {
         <Tag color={getStatusColor(status)}>{status}</Tag>
       ),
     },
-    {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
+{
+  title: "Action",
+  key: "action",
+  render: (_, record) => {
+    const isConverted = record.status.toLowerCase() === "converted";
+
+    return (
+      <Space>
+        {/* Convert Button */}
         <Button
           type="primary"
           style={{
             borderRadius: adminTheme.token.borderRadius,
-            backgroundColor: adminTheme.token.colorPrimary,
+            backgroundColor: adminTheme.token.disabledBg,
           }}
           onClick={() => {
             setModalMode("convert");
             setSelectedEnquiry(record);
             setOpenAddModal(true);
           }}
+          disabled={isConverted} // Disable if already converted
         >
-          Convert to User
+          {isConverted ? "Converted" : "Convert to User"}
         </Button>
-      ),
-    },
+
+        {/* Only show Edit button if not converted */}
+        {!isConverted && (
+          <Button
+            type="default"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setModalMode("edit"); // edit mode
+              setSelectedEnquiry(record);
+              setOpenAddModal(true);
+            }}
+          >
+            Edit
+          </Button>
+        )}
+      </Space>
+    );
+  },
+}
+
   ];
 
   // ---------------- JSX ----------------
@@ -304,19 +328,21 @@ const Enquiry = () => {
       </Card>
 
       {/* Hover Effect (UNCHANGED) */}
-      <style jsx>{`
+      {/* <style jsx>{`
         .enquiry-row:hover {
           background-color: ${adminTheme.components.Table.rowHoverBg};
         }
-      `}</style>
+      `}</style> */}
 
       {/* SAME MODAL FOR ADD + CONVERT */}
-      <AddEnquiryModal
-        open={openAddModal}
-        onCancel={() => setOpenAddModal(false)}
-        mode={modalMode}
-        enquiryData={selectedEnquiry}
-      />
+   <AddEnquiryModal
+  open={openAddModal}
+  onCancel={() => setOpenAddModal(false)}
+  mode={modalMode}
+  enquiryData={selectedEnquiry}
+  readonly={modalMode === "convert"} // READONLY WHEN CONVERTING
+/>
+
     </div>
   );
 };

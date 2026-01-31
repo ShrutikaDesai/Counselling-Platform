@@ -11,30 +11,48 @@ import {
   message,
 } from "antd";
 import dayjs from "dayjs";
-import adminTheme from "../../../theme/adminTheme";
 import { useDispatch, useSelector } from "react-redux";
+
 import {
   addEnquiry,
   clearAddEnquiryState,
 } from "../../../adminSlices/addEnquirySlice";
+import {
+  convertEnquiry,
+  clearConvertState,
+} from "../../../adminSlices/convertEnquirySlice";
+import {
+  updateEnquiry,
+  clearUpdateState,
+} from "../../../adminSlices/updateEnquirySlice";
 import { fetchPrograms } from "../../../adminSlices/programSlice";
+import { fetchEnquiries } from "../../../adminSlices/enquiryListSlice";
 
 const { Option } = Select;
 
-const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
+const AddEnquiryModal = ({ open, onCancel, mode, enquiryData, readonly }) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
 
-  // ---------------- ADD ENQUIRY STATE ----------------
-  const { loading, success, error } = useSelector(
-    (state) => state.addEnquiry
-  );
+  // ---------------- REDUX STATES ----------------
+  const { loading: addLoading, success: addSuccess, error: addError } =
+    useSelector((state) => state.addEnquiry);
 
-  // ---------------- PROGRAM STATE ----------------
   const {
-    list: programs = [],     // ✅ SAFE DEFAULT
-    loading: programLoading,
-  } = useSelector((state) => state.programs);
+    loading: convertLoading,
+    success: convertSuccess,
+    error: convertError,
+  } = useSelector((state) => state.convertEnquiry);
+
+  const {
+    loading: updateLoading,
+    success: updateSuccess,
+    error: updateError,
+  } = useSelector((state) => state.updateEnquiry);
+
+  const { list: programs = [], loading: programLoading } = useSelector(
+    (state) => state.programs
+  );
 
   // ---------------- FETCH PROGRAMS ----------------
   useEffect(() => {
@@ -43,68 +61,125 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
     }
   }, [open, dispatch]);
 
-  // ---------------- PREFILL ON CONVERT ----------------
+  // ---------------- PREFILL FORM ----------------
   useEffect(() => {
-    if (mode === "convert" && enquiryData) {
+    if (open && enquiryData) {
+      const programId =
+        enquiryData.programId ??
+        programs.find((p) => p.name === enquiryData.program)?.id ??
+        null;
+
       form.setFieldsValue({
-        ...enquiryData,
+        firstName:
+          enquiryData.first_name ||
+          enquiryData.name?.split(" ")[0] ||
+          "",
+        lastName:
+          enquiryData.last_name ||
+          enquiryData.name?.split(" ")[1] ||
+          "",
+        phone: enquiryData.phone || "",
+        email: enquiryData.email || "",
+        program: programId, // ✅ ALWAYS ID
+        source: enquiryData.source?.toLowerCase() || null,
         date: enquiryData.date ? dayjs(enquiryData.date) : null,
       });
     } else {
       form.resetFields();
     }
-  }, [mode, enquiryData, form]);
+  }, [open, enquiryData, programs, form]);
 
-  // ---------------- SUCCESS ----------------
+  // ---------------- SUCCESS HANDLING ----------------
   useEffect(() => {
-    if (success) {
-      message.success("Enquiry saved successfully");
+    if (addSuccess) {
+      message.success("Enquiry added successfully");
       dispatch(clearAddEnquiryState());
+      dispatch(fetchEnquiries());
       form.resetFields();
       onCancel();
     }
-  }, [success, dispatch, onCancel, form]);
 
-  // ---------------- ERROR ----------------
+    if (convertSuccess) {
+      message.success("Enquiry converted to user");
+      dispatch(clearConvertState());
+      dispatch(fetchEnquiries());
+      form.resetFields();
+      onCancel();
+    }
+
+    if (updateSuccess) {
+      message.success("Enquiry updated successfully");
+      dispatch(clearUpdateState());
+      dispatch(fetchEnquiries());
+      form.resetFields();
+      onCancel();
+    }
+  }, [
+    addSuccess,
+    convertSuccess,
+    updateSuccess,
+    dispatch,
+    form,
+    onCancel,
+  ]);
+
+  // ---------------- ERROR HANDLING ----------------
   useEffect(() => {
-    if (error) {
-      message.error(error);
+    if (addError) {
+      message.error(addError);
       dispatch(clearAddEnquiryState());
     }
-  }, [error, dispatch]);
+    if (convertError) {
+      message.error(convertError);
+      dispatch(clearConvertState());
+    }
+    if (updateError) {
+      message.error(updateError);
+      dispatch(clearUpdateState());
+    }
+  }, [addError, convertError, updateError, dispatch]);
 
   // ---------------- SUBMIT ----------------
   const handleSubmit = (values) => {
-    const selectedProgram = programs.find(p => p.id === values.program);
-    
+    if (mode === "convert" && enquiryData?.id) {
+      dispatch(convertEnquiry(enquiryData.id));
+      return;
+    }
+
     const payload = {
       first_name: values.firstName,
       last_name: values.lastName,
       phone: values.phone,
       email: values.email,
-      program: selectedProgram?.id || values.program,
-      source: values.source,
-      date: values.date
-        ? values.date.format("YYYY-MM-DD")
-        : null,
-      status: mode === "convert" ? "converted" : "enquiry",
+      program: values.program, // ✅ ID ONLY
+      source: values.source,   // ✅ website / whatsapp / call
+      date: values.date ? values.date.format("YYYY-MM-DD") : null,
     };
 
-    dispatch(addEnquiry(payload));
+    if (mode === "edit" && enquiryData?.id) {
+      dispatch(updateEnquiry({ id: enquiryData.id, ...payload }));
+    } else {
+      dispatch(addEnquiry(payload));
+    }
   };
 
   // ---------------- DISABLE FUTURE DATES ----------------
-  const disabledDate = (current) => {
-    return current && current > dayjs().endOf("day");
-  };
+  const disabledDate = (current) =>
+    current && current > dayjs().endOf("day");
 
   return (
     <Modal
-      title={mode === "convert" ? "Convert Enquiry to User" : "Add Enquiry"}
       open={open}
       onCancel={onCancel}
       footer={null}
       centered
+      title={
+        mode === "convert"
+          ? "Convert Enquiry to User"
+          : mode === "edit"
+          ? "Edit Enquiry"
+          : "Add Enquiry"
+      }
     >
       <Form layout="vertical" form={form} onFinish={handleSubmit}>
         <Row gutter={16}>
@@ -112,14 +187,9 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
             <Form.Item
               name="firstName"
               label="First Name"
-              rules={[
-                { required: true, message: "First name is required" },
-                { min: 2 },
-                { max: 50 },
-                { pattern: /^[a-zA-Z\s]*$/, message: "Only letters allowed" },
-              ]}
+              rules={[{ required: true }]}
             >
-              <Input />
+              <Input disabled={readonly} />
             </Form.Item>
           </Col>
 
@@ -127,28 +197,19 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
             <Form.Item
               name="lastName"
               label="Last Name"
-              rules={[
-                { required: true },
-                { min: 2 },
-                { max: 50 },
-                { pattern: /^[a-zA-Z\s]*$/, message: "Only letters allowed" },
-              ]}
+              rules={[{ required: true }]}
             >
-              <Input />
+              <Input disabled={readonly} />
             </Form.Item>
           </Col>
 
           <Col span={12}>
             <Form.Item
               name="phone"
-              label="Mobile Number(Whatsapp)"
-              rules={[
-                { required: true },
-                { len: 10, message: "Phone must be 10 digits" },
-                { pattern: /^[0-9]*$/, message: "Digits only" },
-              ]}
+              label="Mobile Number"
+              rules={[{ required: true, len: 10 }]}
             >
-              <Input maxLength={10} />
+              <Input maxLength={10} disabled={readonly} />
             </Form.Item>
           </Col>
 
@@ -156,30 +217,26 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
             <Form.Item
               name="email"
               label="Email"
-              rules={[
-                { required: true },
-                { type: "email", message: "Invalid email" },
-              ]}
+              rules={[{ required: true, type: "email" }]}
             >
-              <Input />
+              <Input disabled={readonly} />
             </Form.Item>
           </Col>
 
-          {/* -------- PROGRAM DROPDOWN -------- */}
           <Col span={12}>
             <Form.Item
               name="program"
               label="Program"
-              rules={[{ required: true, message: "Select a program" }]}
+              rules={[{ required: true }]}
             >
               <Select
                 placeholder="Select program"
                 loading={programLoading}
-                allowClear
+                disabled={readonly}
               >
-                {programs.map((program) => (
-                  <Option key={program.id} value={program.id}>
-                    {program.name}
+                {programs.map((p) => (
+                  <Option key={p.id} value={p.id}>
+                    {p.name}
                   </Option>
                 ))}
               </Select>
@@ -192,7 +249,7 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
               label="Source"
               rules={[{ required: true }]}
             >
-              <Select placeholder="Select source">
+              <Select disabled={readonly}>
                 <Option value="website">Website</Option>
                 <Option value="whatsapp">WhatsApp</Option>
                 <Option value="call">Call</Option>
@@ -203,10 +260,10 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
 
           <Col span={24}>
             <Form.Item name="date" label="Enquiry Date">
-              <DatePicker 
-                style={{ width: "100%" }} 
+              <DatePicker
+                style={{ width: "100%" }}
                 disabledDate={disabledDate}
-                placeholder="Select enquiry date"
+                disabled={readonly}
               />
             </Form.Item>
           </Col>
@@ -219,13 +276,19 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData }) => {
           <Button
             type="primary"
             htmlType="submit"
-            loading={loading}
-            style={{
-              backgroundColor: adminTheme.token.colorPrimary,
-              borderRadius: adminTheme.token.borderRadius,
-            }}
+            loading={
+              mode === "convert"
+                ? convertLoading
+                : mode === "edit"
+                ? updateLoading
+                : addLoading
+            }
           >
-            {mode === "convert" ? "Convert User" : "Save Enquiry"}
+            {mode === "convert"
+              ? "Convert User"
+              : mode === "edit"
+              ? "Update Enquiry"
+              : "Save Enquiry"}
           </Button>
         </Form.Item>
       </Form>

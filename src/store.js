@@ -15,6 +15,8 @@ import counsellorReducer from "./adminSlices/counsellorSlice";
 import normalCounsellorReducer from "./adminSlices/normalCounsellorSlice";
 import counsellingBookingReducer from "./adminSlices/counsellingBookingSlice";
 import profileReducer from "./adminSlices/profileSlice";
+import convertEnquiryReducer from "./adminSlices/convertEnquirySlice";
+import updateEnquiryReducer from "./adminSlices/updateEnquirySlice";
 
 
 const store = configureStore({
@@ -33,6 +35,8 @@ const store = configureStore({
         normalCounsellors: normalCounsellorReducer,
         counsellingBooking: counsellingBookingReducer,
         profile: profileReducer,
+        convertEnquiry: convertEnquiryReducer,
+        updateEnquiry: updateEnquiryReducer,
 
   },
 });

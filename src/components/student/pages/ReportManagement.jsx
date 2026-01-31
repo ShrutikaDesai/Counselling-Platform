@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   Row,
@@ -7,7 +7,7 @@ import {
   Button,
   Divider,
   Alert,
-  Grid,
+  Tag,
 } from "antd";
 import {
   FilePdfOutlined,
@@ -16,114 +16,87 @@ import {
   EyeOutlined,
   CalendarOutlined,
   InfoCircleOutlined,
+  StarOutlined,
 } from "@ant-design/icons";
+import SubmitReviewModal from "../modals/SubmitReviewModal";
 
 const { Title, Text } = Typography;
 
-/* ===================== REPORT CARD COMPONENT ===================== */
-const ReportCard = ({ locked, fileUrl }) => {
-  const { useBreakpoint } = Grid;
-  const screens = useBreakpoint();
-  const cardBodyStyle = screens.xs ? { padding: 12 } : { padding: 20 };
+const ReportManagement = () => {
+  /* ---------------- REVIEW STATE ---------------- */
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [rating, setRating] = useState(4);
+  const [feedback, setFeedback] = useState("");
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
-  // Download handler
+  /* ---------------- HANDLERS ---------------- */
+  const handleSubmitReview = () => {
+    setReviewSubmitted(true);
+    setReviewModalOpen(false);
+  };
+
   const handleDownload = () => {
-    if (!fileUrl) return;
-
     const link = document.createElement("a");
-    link.href = fileUrl;
-    link.download = fileUrl.split("/").pop(); // Use file name
+    link.href = "/Career Counselling & Assessment Platform.pdf";
+    link.download = "Career_Report.pdf";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // View handler (open PDF in new tab)
   const handleView = () => {
-    if (!fileUrl) return;
-    window.open(fileUrl, "_blank");
+    window.open("/Career Counselling & Assessment Platform.pdf", "_blank");
   };
 
-  return (
+  /* ---------------- REPORT CARD ---------------- */
+  const ReportCard = ({ title, locked, reason }) => (
     <Card
       style={{
-        height: "100%",
         borderRadius: 16,
         boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
-        overflow: "hidden",
+        height: "100%",
       }}
     >
       {/* Header */}
-      <Row justify="space-between" align="middle">
-        <Col>
-          <Title level={5} style={{ marginBottom: 2 }}>
-            Career Assessment Report
-          </Title>
-        </Col>
-        <Col>
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: locked ? "#cf1322" : "#16a34a",
-            }}
-          >
-            {locked ? "Locked" : "Unlocked"}
-          </Text>
-        </Col>
+      <Row justify="space-between">
+        <Title level={5}>{title}</Title>
+        <Tag color={locked ? "red" : "green"}>
+          {locked ? "Locked" : "Unlocked"}
+        </Tag>
       </Row>
 
       <Divider />
 
-      {/* PDF Preview */}
+      {/* Preview */}
       <div
         style={{
-          height: 260,
+          height: 220,
           borderRadius: 12,
-          marginBottom: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
           background: locked
             ? "linear-gradient(180deg,#020617,#0f172a)"
             : "#f3f4f6",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 16,
         }}
       >
         {locked ? (
-          <div style={{ textAlign: "center", color: "#fff" }}>
-            <LockOutlined style={{ fontSize: 48, marginBottom: 12 }} />
-            <Title level={5} style={{ color: "#fff" }}>
-              Report Locked
-            </Title>
-          </div>
+          <LockOutlined style={{ fontSize: 46, color: "#fff" }} />
         ) : (
-          <div style={{ textAlign: "center" }}>
-            <FilePdfOutlined style={{ fontSize: 46, color: "#9ca3af" }} />
-            <Text style={{ display: "block", marginTop: 8 }}>PDF Preview</Text>
-            <Text type="colorTextSecondary">32 pages</Text>
-          </div>
+          <FilePdfOutlined style={{ fontSize: 46 }} />
         )}
       </div>
 
-      {/* Report Info */}
-      <div
-        style={{
-          display: "flex",
-          gap: 18,
-          alignItems: "center",
-          marginBottom: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <CalendarOutlined style={{ color: "#6b7280" }} />
-          <Text type="colorTextSecondary">07 Jan 2026</Text>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <InfoCircleOutlined style={{ color: "#6b7280" }} />
-          <Text type="colorTextSecondary">2.4 MB</Text>
-        </div>
-      </div>
+      {/* Info */}
+      <Row gutter={16} style={{ marginBottom: 12 }}>
+        <Col>
+          <CalendarOutlined /> <Text>07 Jan 2026</Text>
+        </Col>
+        <Col>
+          <InfoCircleOutlined /> <Text>2.4 MB</Text>
+        </Col>
+      </Row>
 
       <Divider />
 
@@ -132,83 +105,98 @@ const ReportCard = ({ locked, fileUrl }) => {
         <>
           <Button
             block
-            size="large"
             icon={<EyeOutlined />}
-            style={{
-              borderRadius: 10,
-              marginBottom: 10,
-              background: "#0f172a",
-              color: "#fff",
-            }}
+            style={{ marginBottom: 10 }}
             onClick={handleView}
           >
             View Report
           </Button>
-
-          <Button
-            block
-            size="large"
-            icon={<DownloadOutlined />}
-            style={{ borderRadius: 10 }}
-            onClick={handleDownload}
-          >
+          <Button block icon={<DownloadOutlined />} onClick={handleDownload}>
             Download PDF
           </Button>
         </>
+      ) : reason === "payment" ? (
+        <Alert
+          type="warning"
+          showIcon
+          message="Payment Pending"
+          description="Complete payment to unlock this report"
+        />
       ) : (
         <>
-          <Alert
-            type="warning"
-            showIcon
-            icon={<LockOutlined />}
-            message="Payment Required"
-            description="Complete your payment to unlock this report"
-            style={{ marginBottom: 16 }}
-          />
-
-          <Button
-            block
-            size="large"
-            disabled
-            icon={<LockOutlined />}
-            style={{
-              borderRadius: 10,
-              background: "#f1b58d",
-              color: "#fff",
-            }}
-          >
-            Report Locked
-          </Button>
+          {!reviewSubmitted ? (
+            <>
+              <Alert
+                type="info"
+                showIcon
+                message="Review Required"
+                description="Submit your review to unlock the report"
+                style={{ marginBottom: 12 }}
+              />
+              <Button
+                block
+                icon={<StarOutlined />}
+                type="primary"
+                onClick={() => setReviewModalOpen(true)}
+              >
+                Submit Review
+              </Button>
+            </>
+          ) : (
+            <Alert
+              type="info"
+              showIcon
+              message="Review Submitted"
+              description="Waiting for admin verification"
+            />
+          )}
         </>
       )}
     </Card>
   );
-};
 
-/* ======================= REPORT MANAGEMENT PAGE ======================= */
-const ReportManagement = () => {
   return (
-    <div
-      style={{
-        padding: "16px",
-        minHeight: "100vh",
-        textAlign:"center",
-      }}
-    >
-      <Title level={2}>My Reports</Title>
-      <Text type="colorTextSecondary">View and download your assessment reports</Text>
+    <div style={{ padding: 16 }}>
+      <Title level={2} style={{ textAlign: "center" }}>
+        My Reports
+      </Title>
+      <Text
+        type="colorTextSecondary"
+        style={{ display: "block", textAlign: "center" }}
+      >
+        View and manage your assessment reports
+      </Text>
 
       <Divider />
 
       <Row gutter={[24, 24]}>
-        <Col xs={24} md={12}>
-          <ReportCard locked={false} fileUrl="/Career Counselling & Assessment Platform.pdf" />
+        {/* 1️⃣ Unlocked */}
+        <Col xs={24} md={8}>
+          <ReportCard title="Career Assessment Report" locked={false} />
         </Col>
 
-        <Col xs={24} md={12}>
-          <ReportCard locked={true} />
+        {/* 2️⃣ Locked – Payment Pending */}
+        <Col xs={24} md={8}>
+          <ReportCard title="Career Assessment Report" locked reason="payment" />
         </Col>
-      </Row>
+
+        {/* 3️⃣ Locked – Review Pending */}
+        <Col xs={24} md={8}>
+          <ReportCard title="Career Assessment Report" locked reason="review" />
+        </Col>
+
+        </Row>
+
+      {/* ---------------- REVIEW MODAL ---------------- */}
+      <SubmitReviewModal
+        open={reviewModalOpen}
+        onCancel={() => setReviewModalOpen(false)}
+        onSubmit={handleSubmitReview}
+        rating={rating}
+        setRating={setRating}
+        feedback={feedback}
+        setFeedback={setFeedback}
+      />
     </div>
   );
 };
