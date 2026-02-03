@@ -13,11 +13,13 @@ import {
 } from "@ant-design/icons";
 import AddProgramModal from "../modals/AddProgramModal";
 import AddPackageModal from "../modals/AddPackageModal";
+import adminTheme from "../../../theme/adminTheme";
 import { fetchPrograms ,fetchProgramStats} from "../../../adminSlices/programSlice";
 import { fetchPackages, createPackage, updatePackage } from "../../../adminSlices/packageSlice";
 
 
 const { Title, Text } = Typography;
+
 
 const Programs = () => {
   const dispatch = useDispatch();
@@ -46,6 +48,7 @@ const statsCards = [
   { title: "Total Enrolled", value: stats?.total_enrolled_students || 0, icon: <TeamOutlined /> },
   { title: "Revenue (Monthly)", value: `₹${stats?.revenue || 0}`, icon: <DollarOutlined /> },
 ];
+
 
 
   const programColumns = [
@@ -192,7 +195,11 @@ const statsCards = [
           <Col xs={24} sm={12} md={12} lg={6} key={index}>
             <Card hoverable style={{ borderRadius: 16, textAlign: "center" }} bodyStyle={{ padding: 16 }}>
               <Text style={{ fontSize: 14, color: "#6B7280" }}>{item.title}</Text>
-              <div style={{ marginTop: 8 }}>{React.cloneElement(item.icon, { style: { fontSize: 28 } })}</div>
+              <div style={{ marginTop: 8 }}>
+                {React.cloneElement(item.icon, {
+                  style: { fontSize: 28, color:adminTheme.token.colorPrimary },
+                })}
+              </div>
               <Title level={2} style={{ marginTop: 8, fontSize: 22 }}>{item.value}</Title>
             </Card>
           </Col>

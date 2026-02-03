@@ -111,7 +111,7 @@ const Profile = () => {
     {/* Full width */}
     <Col xs={24} sm={24}>
       <Text strong>
-        <PhoneOutlined /> Mobile Number:
+        <PhoneOutlined /> WhatsApp Mobile Number:
       </Text>
       <Text style={{ marginLeft: 8 }}>
         {profile.phone}

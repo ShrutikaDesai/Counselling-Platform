@@ -58,6 +58,11 @@ const UserProfileModal = ({ open, onClose, user }) => {
   const { token } = theme.useToken();
   if (!user) return null;
 
+  // Prefer explicit name; fall back to first_name + last_name
+  const displayName =
+    (user.name && user.name.toString().trim()) ||
+    `${(user.first_name || "").toString().trim()} ${(user.last_name || "").toString().trim()}`.trim();
+
   /* -------- MAP USER STATUS → CURRENT STEP -------- */
   let currentStep = 1;
   if (user.paymentStatus === "Fully Paid") currentStep = 3;
@@ -79,7 +84,7 @@ const UserProfileModal = ({ open, onClose, user }) => {
           <Col xs={24} md={12}>
             <Title level={5}>Student Details</Title>
             <Descriptions bordered column={1}>
-              <Descriptions.Item label="Name">{user.name}</Descriptions.Item>
+              <Descriptions.Item label="Name">{displayName}</Descriptions.Item>
               <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
               <Descriptions.Item label="Sessions">{user.sessions}</Descriptions.Item>
               <Descriptions.Item label="Report Status">

@@ -12,6 +12,10 @@ export const loginUser = createAsyncThunk(
 
       localStorage.setItem("accessToken", data.access);
       localStorage.setItem("refreshToken", data.refresh);
+      localStorage.setItem("adminRole", data.user.role);
+      // Store email safely: try lowercase 'email' first, then 'Email' (backend inconsistent)
+      localStorage.setItem("userEmail", data.user.email || data.user.Email || "");
+   
 
       console.log("error:", data.error);
   

@@ -119,19 +119,19 @@ const EditProfileModal = ({ visible, onClose, userData }) => {
           <Input disabled />
         </Form.Item>
 
-        {/* Mobile Number */}
+{/* WhatsApp Mobile Number */}
         <Form.Item
-          label="Mobile Number"
+          label="WhatsApp Mobile Number"
           name="phone"
           rules={[
-            { required: true, message: "Mobile number is required" },
+            { required: true, message: "WhatsApp mobile number is required" },
             {
-              pattern: /^[6-9]\d{9}$/,
+              pattern: /^[6-9]\d{9}$/, 
               message: "Enter a valid 10-digit mobile number",
             },
           ]}
         >
-          <Input maxLength={10} placeholder="Enter mobile number" />
+          <Input maxLength={10} placeholder="Enter WhatsApp number" />
         </Form.Item>
 
         {/* Role (Disabled) */}

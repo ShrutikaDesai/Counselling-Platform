@@ -1,3 +1,4 @@
+// src/adminSlices/packageSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getPackagesApi, createPackageApi, updatePackageApi } from "../adminApi/packageApi";
 

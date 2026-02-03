@@ -206,7 +206,7 @@ const AddEnquiryModal = ({ open, onCancel, mode, enquiryData, readonly }) => {
           <Col span={12}>
             <Form.Item
               name="phone"
-              label="Mobile Number"
+              label="WhatsApp Mobile Number"
               rules={[{ required: true, len: 10 }]}
             >
               <Input maxLength={10} disabled={readonly} />

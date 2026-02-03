@@ -148,7 +148,7 @@ const EmployeeList = () => {
         </>
       ),
     },
-    { title: "Mobile Number", dataIndex: "mobile", responsive: ["sm"] },
+    { title: "WhatsApp Mobile Number", dataIndex: "mobile", responsive: ["sm"] },
     { title: "Role", dataIndex: "role" },
     {
       title: "Date",

@@ -1,6 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosInstance from "../axiosInstance";
-import { addUserApi } from "../adminApi/userApi";
+import {
+  addUserApi,
+  fetchStudentsApi,
+  updateUserApi,
+  deleteUserApi
+} from "../adminApi/userApi";
+
 
 /* ===================== THUNKS ===================== */
 
@@ -22,13 +27,33 @@ export const fetchStudents = createAsyncThunk(
   "users/fetchStudents",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/only-students/");
-      return response.data.data;
+      const data = await fetchStudentsApi();
+      return data.data; // backend structure
     } catch (error) {
       return rejectWithValue("Failed to fetch students");
     }
   }
 );
+
+
+// UPDATE USER
+export const updateUser = createAsyncThunk(
+  "users/updateUser",
+  async ({ id, payload }, { rejectWithValue }) => {
+    try {
+      const data = await updateUserApi(id, payload);
+
+      // if API returns updated object
+      if (data?.data) return data.data;
+
+      // fallback
+      return { id, ...payload };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Update failed");
+    }
+  }
+);
+
 
 // DELETE USER
 export const deleteUser = createAsyncThunk(
@@ -86,6 +111,10 @@ const userSlice = createSlice({
     current_academic_stage: u.current_academic_stage || "",
     city: u.city || "",
 
+    // Include IDs so edit modal can pre-fill Selects
+    program_id: u.program?.id || u.program_id || null,
+    package_id: u.package?.id || u.package_id || null,
+
     program: u.program_name || "N/A",
     package: u.package_name || "N/A",
 
@@ -115,7 +144,7 @@ reportStatus: u.is_report_locked ? "Unlocked" : "Locked",
   }));
 
   // 🔥 Ensure newest users appear at the top
-  state.list = mappedUsers.reverse(); // or sort by ID descending: mappedUsers.sort((a, b) => b.id - a.id)
+  state.list = mappedUsers.reverse(); 
 })
 
       .addCase(fetchStudents.rejected, (state, action) => {
@@ -143,13 +172,14 @@ reportStatus: u.is_report_locked ? "Unlocked" : "Locked",
           student_name: u.student_name || "",
           email: u.email || "",
           phone: u.phone || "",
-          study_class: u.study_class || "",
-          current_academic_stage: u.current_academic_stage || "",
-          city: u.city || "",
+
+          // Include IDs so edit modal can pre-fill Selects
+          program_id: u.program?.id || u.program_id || null,
+          package_id: u.package?.id || u.package_id || null,
 
           // FIXED: Access program_name and package_name directly
-          program: u.program_name || "N/A",
-          package: u.package_name || "N/A",
+          program: u.program?.name || "N/A",
+          package: u.package?.name || "N/A",
 
           paymentStatus: u.payment_status 
             ? u.payment_status.split('_').map(word => 
@@ -181,6 +211,37 @@ reportStatus: u.is_report_locked ? "Unlocked" : "Locked",
       .addCase(addUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      /* ---------- UPDATE ---------- */
+      .addCase(updateUser.fulfilled, (state, action) => {
+        const payload = action.payload || {};
+        if (!payload.id) {
+          // Nothing to update (API returned only a message); keep existing state
+          return;
+        }
+
+        const index = state.list.findIndex((u) => u.id === payload.id);
+        if (index !== -1) {
+          const existing = state.list[index];
+
+          // Merge only known/updated fields to avoid overwriting normalized fields accidentally
+          const updated = {
+            ...existing,
+            first_name: payload.first_name ?? existing.first_name,
+            last_name: payload.last_name ?? existing.last_name,
+            email: payload.email ?? existing.email,
+            phone: payload.phone ?? existing.phone,
+
+            // Program / package: support both {program_id, package_id} or {program: {id, name}} or names
+            program_id: payload.program_id ?? payload.program?.id ?? existing.program_id,
+            package_id: payload.package_id ?? payload.package?.id ?? existing.package_id,
+            program: payload.program_name ?? payload.program?.name ?? existing.program,
+            package: payload.package_name ?? payload.package?.name ?? existing.package,
+          };
+
+          state.list[index] = updated;
+        }
       })
 
       /* ---------- DELETE USER ---------- */

@@ -15,6 +15,7 @@ import {
 import { UploadOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import dayjs from "dayjs";
+import { fetchPackages } from "../../../adminSlices/packageSlice";
 
 import {
     submitPayment,
@@ -35,12 +36,17 @@ const UploadPaymentModal = ({ open, onClose }) => {
         (state) => state.users
     );
 
+    const { list: packageList, loading: packageLoading } = useSelector(
+        (state) => state.packages
+    );
+
     const [fileList, setFileList] = useState([]);
     const [previewUrl, setPreviewUrl] = useState("");
 
     // Fetch students when modal opens
     useEffect(() => {
         if (open) dispatch(fetchStudents());
+        if (open) dispatch(fetchPackages());
     }, [open, dispatch]);
 
     // Generate preview
@@ -56,25 +62,22 @@ const UploadPaymentModal = ({ open, onClose }) => {
 
     const handleSubmit = (values) => {
         const formData = new FormData();
-        formData.append("user", values.user);
-        formData.append("package", values.package);
+
+        formData.append("student_profile", values.student_profile);
+        formData.append("package", values.package); // ✅ ID
         formData.append("amount", values.amount);
         formData.append("payment_type", values.paymentType);
-        formData.append("payment_method", values.paymentMethod);
+        formData.append("method", values.paymentMethod); // ✅ FIX
+        if (values.transactionId) {
+            formData.append("transaction_id", values.transactionId);
+        }
         formData.append(
             "payment_date",
             dayjs(values.paymentDate).format("YYYY-MM-DD")
         );
 
-        if (values.transactionId) {
-            formData.append("transaction_id", values.transactionId);
-        }
-
         if (fileList.length > 0) {
-            formData.append(
-                "receipt",
-                fileList[0].originFileObj
-            );
+            formData.append("receipt", fileList[0].originFileObj);
         }
 
         dispatch(submitPayment(formData));
@@ -118,6 +121,11 @@ const UploadPaymentModal = ({ open, onClose }) => {
                             transactionId: undefined,
                         });
                     }
+
+                    // If payment method changed and it's not UPI, clear transactionId
+                    if (Object.prototype.hasOwnProperty.call(changedValues, 'paymentMethod') && changedValues.paymentMethod !== 'upi') {
+                        form.setFieldsValue({ transactionId: undefined });
+                    }
                 }}
             >
                 {/* STUDENT */}
@@ -125,7 +133,7 @@ const UploadPaymentModal = ({ open, onClose }) => {
                     <Col span={12}>
                         <Form.Item
                             label="Select Student"
-                            name="user"
+                            name="student_profile"
                             rules={[
                                 { required: true, message: "Please select student" },
                             ]}
@@ -141,16 +149,16 @@ const UploadPaymentModal = ({ open, onClose }) => {
                                     );
 
                                     form.setFieldsValue({
-                                        package: selectedStudent?.package || "",
+                                        package: selectedStudent?.package_id,
                                     });
                                 }}
                             >
                                 {students.map((student) => (
                                     <Option key={student.id} value={student.id}>
-                                        {student.first_name} {student.last_name} 
+                                        {student.first_name} {student.last_name}
                                         <div style={{ fontSize: 12 }}>
-            {student.email}
-          </div>
+                                            {student.email}
+                                        </div>
                                     </Option>
                                 ))}
                             </Select>
@@ -165,12 +173,17 @@ const UploadPaymentModal = ({ open, onClose }) => {
                                 { required: true, message: "Please select package" },
                             ]}
                         >
-                            <Select placeholder="Select package">
-                                <Option value="basic">Basic</Option>
-                                <Option value="standard">Standard</Option>
-                                <Option value="premium">Premium</Option>
+                            <Select
+                                placeholder="Select package"
+                                loading={packageLoading}
+                                allowClear
+                            >
+                                {packageList.map((pkg) => (
+                                    <Option key={pkg.id} value={pkg.id}>
+                                        {pkg.name}
+                                    </Option>
+                                ))}
                             </Select>
-
                         </Form.Item>
                     </Col>
                 </Row>
@@ -200,40 +213,61 @@ const UploadPaymentModal = ({ open, onClose }) => {
                     </Col>
                 </Row>
 
-                <Col span={12}>
-                    <Form.Item shouldUpdate>
-                        {({ getFieldValue }) => {
-                            const paymentType = getFieldValue("paymentType");
+                <Row gutter={16} style={{ width: '100%', marginBottom: 8 }}>
+                    <Col xs={24} md={12}>
+                        <Form.Item shouldUpdate>
+                            {({ getFieldValue }) => {
+                                const paymentType = getFieldValue("paymentType");
 
-                            return (
-                                <Form.Item
-                                    label="Payment Method"
-                                    name="paymentMethod"
-                                    rules={[
-                                        { required: true, message: "Please select payment method" },
-                                    ]}
-                                >
-                                    <Select
-                                        placeholder={
-                                            paymentType
-                                                ? "Select payment method"
-                                                : "Select payment type first"
-                                        }
-                                        disabled={!paymentType}
+                                return (
+                                    <Form.Item
+                                        label="Payment Method"
+                                        name="paymentMethod"
+                                        rules={[
+                                            { required: true, message: "Please select payment method" },
+                                        ]}
                                     >
-                                        {paymentType === "online" && (
-                                            <Option value="UPI">UPI</Option>
-                                        )}
+                                        <Select
+                                            placeholder={
+                                                paymentType
+                                                    ? "Select payment method"
+                                                    : "Select payment type first"
+                                            }
+                                            disabled={!paymentType}
+                                        >
+                                            {paymentType === "online" && (
+                                                <Option value="upi">UPI</Option>
+                                            )}
 
-                                        {paymentType === "offline" && (
-                                            <Option value="Cash">Cash</Option>
-                                        )}
-                                    </Select>
-                                </Form.Item>
-                            );
-                        }}
-                    </Form.Item>
-                </Col>
+                                            {paymentType === "offline" && (
+                                                <Option value="cash">Cash</Option>
+                                            )}
+                                        </Select>
+                                    </Form.Item>
+                                );
+                            }}
+                        </Form.Item>
+                    </Col>
+
+                    <Col xs={24} md={12}>
+                        <Form.Item shouldUpdate>
+                            {({ getFieldValue }) => {
+                                const method = getFieldValue('paymentMethod');
+                                return method === 'upi' ? (
+                                    <Form.Item
+                                        label="Transaction ID"
+                                        name="transactionId"
+                                        rules={[{ required: true, message: 'Please enter transaction id for UPI' }]}
+                                    >
+                                        <Input placeholder="Transaction ID" />
+                                    </Form.Item>
+                                ) : (
+                                    <div style={{ height: 56 }} />
+                                );
+                            }}
+                        </Form.Item>
+                    </Col>
+                </Row> 
 
 
                 <Form.Item

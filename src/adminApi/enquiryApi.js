@@ -3,7 +3,7 @@ import axiosInstance from "../axiosInstance";
 //get enquiries
 export const getEnquiriesApi = async () => {
   const response = await axiosInstance.get(
-    "/lead-registeration/leads/"
+    "/lead-registeration/all-leads/"
   );
   return response.data;
 };

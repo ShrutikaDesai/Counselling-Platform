@@ -18,6 +18,8 @@ import {
 import { UploadOutlined } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
 import dayjs from "dayjs";
+import { useDispatch } from "react-redux";
+import { verifyPayment, updatePayment } from "../../../adminSlices/paymentSlice";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -41,6 +43,7 @@ const valueBoxStyle = {
 /* ---------------- COMPONENT ---------------- */
 const PaymentProofModal = ({ open, onClose, data }) => {
   const [form] = Form.useForm();
+  const dispatch = useDispatch();
   const [file, setFile] = useState(null);
   const screens = useBreakpoint();
   const isMobile = !screens.md;
@@ -49,53 +52,71 @@ const PaymentProofModal = ({ open, onClose, data }) => {
   const isEdit = mode === "edit";
   const isVerify = mode === "verify";
 
-  /* -------- PREVIEW URL -------- */
   const previewUrl = file ? URL.createObjectURL(file) : data?.proofUrl || null;
 
   useEffect(() => {
     if (open && data) {
       form.resetFields();
-
-      const formValues = {
+      form.setFieldsValue({
         ...data,
-        // Convert paymentDate to dayjs for edit mode
         paymentDate: data.paymentDate
-          ? isEdit
-            ? dayjs(data.paymentDate)
-            : dayjs(data.paymentDate).format("YYYY-MM-DD")
+          ? dayjs(data.paymentDate)
+          : data.date && data.date !== "-"
+          ? dayjs(data.date)
           : null,
-      };
-
-      form.setFieldsValue(formValues);
+      });
       setFile(null);
     }
-  }, [open, isEdit, data, form]);
+  }, [open, data, form]);
 
   if (!data) return null;
 
-  /* -------- HANDLERS -------- */
+  /* ---------------- HANDLERS ---------------- */
   const handleUpdate = () => {
     form.validateFields().then((values) => {
-      const payload = {
-        ...values,
-        reportFile: file,
-      };
-      console.log("UPDATED DATA 👉", payload);
-      onClose();
+      const payload = new FormData();
+
+      Object.keys(values).forEach((key) => {
+        if (values[key] !== undefined && values[key] !== null) {
+          if (key === "paymentDate") {
+            payload.append(key, values[key].format("YYYY-MM-DD"));
+          } else {
+            payload.append(key, values[key]);
+          }
+        }
+      });
+
+      if (file) payload.append("proof_file", file);
+
+      dispatch(updatePayment({ id: data.key, payload }))
+        .unwrap()
+        .then((res) => {
+          message.success(res.message || "Payment updated successfully");
+          onClose();
+        })
+        .catch((err) => {
+          message.error(err || "Failed to update payment");
+        });
     });
   };
 
   const handleVerify = (status) => {
     form.validateFields().then((values) => {
-      const payload = {
-        id: data.key,
-        verifiedAmount: values.verifiedAmount,
-        finalStatus: status,
-        remarks: values.remarks,
-      };
-
-      console.log("VERIFICATION PAYLOAD 👉", payload);
-      onClose();
+      dispatch(
+        verifyPayment({
+          id: data.key,
+          payload: {
+            verifiedAmount: values.verifiedAmount || data.amount,
+            action: status,
+          },
+        })
+      )
+        .unwrap()
+        .then((res) => {
+          res.success ? message.success(res.message) : message.error(res.error);
+          onClose();
+        })
+        .catch((err) => message.error(err?.error));
     });
   };
 
@@ -117,8 +138,8 @@ const PaymentProofModal = ({ open, onClose, data }) => {
     <Modal
       key={mode}
       open={open}
-      destroyOnClose
       centered
+      destroyOnClose
       width={isMobile ? "95%" : 760}
       onCancel={onClose}
       title={<Title level={4}>Payment Details</Title>}
@@ -137,65 +158,51 @@ const PaymentProofModal = ({ open, onClose, data }) => {
         )
       }
     >
-      {/* ================= FORM / VIEW SECTION ================= */}
+      {/* ================= FORM / VIEW ================= */}
       {isEdit ? (
         <Form form={form} layout="vertical">
-          <Form.Item label="Student Name" name="name">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="Package" name="package">
-            <Input />
-          </Form.Item>
-
+          {/* Student + Package */}
           <Row gutter={16}>
             <Col xs={24} md={12}>
-              <Form.Item label="Status" name="status">
-                <Select>
-                  <Option value="Fully Paid">Fully Paid</Option>
-                  <Option value="Partial Paid">Partial Paid</Option>
-                  <Option value="Pending">Pending</Option>
-                </Select>
+              <Form.Item label="Student Name" name="name">
+                <Input />
               </Form.Item>
             </Col>
-
             <Col xs={24} md={12}>
-              <Form.Item label="Payment Method" name="paymentMethod">
-                <Select>
-                  <Option value="UPI">UPI</Option>
-                  <Option value="Card">Card</Option>
-                  <Option value="Net Banking">Net Banking</Option>
-                  <Option value="Cash">Cash</Option>
-                  <Option value="Wallet">Wallet</Option>
-                </Select>
+              <Form.Item label="Package" name="package">
+                <Input />
               </Form.Item>
             </Col>
           </Row>
 
+          {/* Method + Amount */}
           <Row gutter={16}>
+            <Col xs={24} md={12}>
+              <Form.Item label="Payment Method" name="paymentMethod">
+                <Select>
+                  <Option value="upi">UPI</Option>
+                  <Option value="cash">Cash</Option>
+                </Select>
+              </Form.Item>
+            </Col>
             <Col xs={24} md={12}>
               <Form.Item label="Amount" name="amount">
                 <Input />
               </Form.Item>
             </Col>
+          </Row>
 
+          {/* Txn + Date */}
+          <Row gutter={16}>
             <Col xs={24} md={12}>
               <Form.Item label="Transaction ID" name="txn">
                 <Input />
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
             <Col xs={24} md={12}>
               <Form.Item label="Payment Date" name="paymentDate">
                 <DatePicker
-                  style={{
-                    width: "100%",
-                    marginTop: 4,
-                    height: 36,
-                    borderRadius: 6,
-                  }}
+                  style={{ width: "100%", height: 36 }}
                   format="YYYY-MM-DD"
                 />
               </Form.Item>
@@ -204,37 +211,36 @@ const PaymentProofModal = ({ open, onClose, data }) => {
         </Form>
       ) : (
         <>
-          <Text style={labelStyle}>Student Name</Text>
-          <div style={valueBoxStyle}>{data.name}</div>
-
-          <Text style={labelStyle}>Package</Text>
-          <div style={valueBoxStyle}>{data.package}</div>
-
+          {/* Student + Package */}
           <Row gutter={16}>
             <Col xs={24} md={12}>
-              <Text style={labelStyle}>Status</Text>
-              <div style={valueBoxStyle}>{data.status}</div>
+              <Text style={labelStyle}>Student Name</Text>
+              <div style={valueBoxStyle}>{data.name}</div>
             </Col>
+            <Col xs={24} md={12}>
+              <Text style={labelStyle}>Package</Text>
+              <div style={valueBoxStyle}>{data.package}</div>
+            </Col>
+          </Row>
 
+          {/* Method + Amount */}
+          <Row gutter={16}>
             <Col xs={24} md={12}>
               <Text style={labelStyle}>Payment Method</Text>
               <div style={valueBoxStyle}>{data.paymentMethod}</div>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
             <Col xs={24} md={12}>
               <Text style={labelStyle}>Amount</Text>
               <div style={valueBoxStyle}>{data.amount}</div>
             </Col>
+          </Row>
 
+          {/* Txn + Date */}
+          <Row gutter={16}>
             <Col xs={24} md={12}>
               <Text style={labelStyle}>Transaction ID</Text>
               <div style={valueBoxStyle}>{data.txn}</div>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
             <Col xs={24} md={12}>
               <Text style={labelStyle}>Payment Date</Text>
               <div style={valueBoxStyle}>
@@ -247,9 +253,9 @@ const PaymentProofModal = ({ open, onClose, data }) => {
         </>
       )}
 
-      {/* ================= UPLOAD / PREVIEW ================= */}
+      {/* ================= RECEIPT ================= */}
       <Divider />
-      <Title style={labelStyle} level={5}>
+      <Title level={5} style={labelStyle}>
         Upload Receipt / Screenshot
       </Title>
 
@@ -257,9 +263,8 @@ const PaymentProofModal = ({ open, onClose, data }) => {
         style={{
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
-          alignItems: isMobile ? "stretch" : "center",
           gap: 20,
-          padding: isMobile ? 20 : "28px 32px",
+          padding: 24,
           borderRadius: 16,
           border: `1px dashed ${token.colorBorder}`,
         }}
@@ -273,49 +278,38 @@ const PaymentProofModal = ({ open, onClose, data }) => {
               maxWidth: 360,
               height: 220,
               borderRadius: 12,
-              border: "1px solid #e0e0e0",
-              background: "#fff",
             }}
           />
         ) : (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Empty description="No receipt / screenshot uploaded yet" />
-          </div>
+          <Empty description="No receipt uploaded" />
         )}
 
         {isEdit && (
           <Upload {...uploadProps}>
             <Button
               type="primary"
-              size="large"
-              block={isMobile}
               icon={<UploadOutlined />}
+              block={isMobile}
             >
-              {previewUrl ? "Change" : "Upload"}
+              {previewUrl ? "Change" : "Upload Receipt"}
             </Button>
           </Upload>
         )}
       </div>
 
-      {/* ================= VERIFY SECTION ================= */}
+      {/* ================= VERIFY ================= */}
       {isVerify && (
         <>
           <Divider />
-          <Row justify="end" gutter={8} style={{ marginTop: 16 }}>
+          <Row justify="end" gutter={8}>
             <Col>
-              <Button danger onClick={() => handleVerify("Rejected")}>
-                Reject Payment
+              <Button danger onClick={() => handleVerify("reject")}>
+                Reject
               </Button>
             </Col>
             <Col>
-              <Button type="primary" onClick={() => handleVerify("Approved")}>
-                Approve Payment
+              <Button type="primary" onClick={() => handleVerify("approve")}>
+                Approve
               </Button>
             </Col>
           </Row>

@@ -35,7 +35,9 @@ const AdminLogin = () => {
   const screens = useBreakpoint();
   const navigate = useNavigate();
   const dispatch = useDispatch();
- const { loading, error, success, successMessage } = useSelector((state) => state.auth);
+  const [form] = Form.useForm();
+  const [selectedRole, setSelectedRole] = React.useState(null);
+  const { loading, error, success, successMessage, user } = useSelector((state) => state.auth);
 
 useEffect(() => {
   if (success) {
@@ -53,8 +55,17 @@ useEffect(() => {
 
 
   const onFinish = (values) => {
-    console.log("Login Values:", values);
-    dispatch(loginUser(values));
+    const payload = { ...values };
+
+    // When role is 'counsellor', put the selected counsellor type into the `role` field
+    // so backend receives role: 'lead' or 'normal' (instead of role: 'counsellor' + counsellor_type)
+    if (values.role === "counsellor" && values.counsellor_type) {
+      payload.role = values.counsellor_type;
+      delete payload.counsellor_type;
+    }
+
+    console.log("Login Payload:", payload);
+    dispatch(loginUser(payload));
   };
 
   return (
@@ -116,7 +127,7 @@ useEffect(() => {
             <Divider style={{ margin: "20px 0" }} />
 
             {/* ================= FORM ================= */}
-            <Form layout="vertical" onFinish={onFinish}>
+            <Form form={form} layout="vertical" onFinish={onFinish}>
               <Form.Item
                 label={<Text strong>Email Address</Text>}
                 name="email"
@@ -156,13 +167,37 @@ useEffect(() => {
                   { required: true, message: "Please select your role" },
                 ]}
               >
-                <Select size="large" placeholder="Select your role">
+                <Select
+                  size="large"
+                  placeholder="Select your role"
+                  onChange={(value) => {
+                    setSelectedRole(value);
+                    // Clear counsellor type if role changed away
+                    if (value !== "counsellor") {
+                      form.resetFields(["counsellor_type"]);
+                    }
+                  }}
+                >
                   <Option value="admin">Admin</Option>
-                  <Option value="H aageeradmin">Superadmin</Option>
+                  <Option value="superadmin">Superadmin</Option>
                   <Option value="employee">Employee</Option>
                   <Option value="counsellor">Counsellor</Option>
                 </Select>
               </Form.Item>
+
+              {/* Show this only when counsellor is selected */}
+              {selectedRole === "counsellor" && (
+                <Form.Item
+                  label={<Text strong>Counsellor Type</Text>}
+                  name="counsellor_type"
+                  rules={[{ required: true, message: "Please select counsellor type" }]}
+                >
+                  <Select size="large" placeholder="Select counsellor type">
+                    <Option value="lead_counsellor">Lead Counsellor</Option>
+                    <Option value="counsellor">Counsellor</Option>
+                  </Select>
+                </Form.Item>
+              )}
 
               <Form.Item style={{ marginTop: 28 }}>
                 <Button

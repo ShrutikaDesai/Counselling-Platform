@@ -10,7 +10,8 @@ import {
   Select,
   Row,
   Col,
-  Popconfirm,
+  Modal,
+  message,
   Space,
 } from "antd";
 import {
@@ -27,7 +28,7 @@ import {
 import adminTheme from "../../../theme/adminTheme";
 import UserProfileModal from "../modals/UserProfileModal";
 import AddUserModal from "../modals/AddUserModal";
-import { fetchStudents } from "../../../adminSlices/userSlice";
+import { fetchStudents, deleteUser } from "../../../adminSlices/userSlice";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -46,8 +47,9 @@ useEffect(() => {
   const [paymentFilter, setPaymentFilter] = useState(null);
   const [examFilter, setExamFilter] = useState(null);
 
-  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [addEditModalOpen, setAddEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
   const [selectedUser, setSelectedUser] = useState(null);
 
 
@@ -171,28 +173,24 @@ const filteredData = users.filter((user) => {
             View
           </Button>
           <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setSelectedUser(record);
-              setAddEditModalOpen(true);
-            }}
+  type="primary"
+  icon={<EditOutlined />}
+  onClick={() => {
+    setSelectedUser(record);
+    setModalMode("edit");
+    setAddEditModalOpen(true);
+  }}
+>
+  Edit
+</Button>
+          <Button
+            type="default"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record)}
           >
-            Edit
+            Delete
           </Button>
-          <Popconfirm
-            title="Delete User"
-            description="Are you sure you want to delete this user?"
-            onConfirm={() =>
-              setUsers((prev) => prev.filter((u) => u.key !== record.key))
-            }
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="default" danger icon={<DeleteOutlined />}>
-              Delete
-            </Button>
-          </Popconfirm>
         </Space>
       ),
     },
@@ -201,7 +199,30 @@ const filteredData = users.filter((user) => {
   // ADD USER HANDLER
   const handleAddUser = () => {
     setSelectedUser(null);
+    setModalMode("add");
     setAddEditModalOpen(true);
+  };
+
+  // DELETE handler: open confirmation modal (centered, shows user name)
+  const handleDelete = (record) => {
+    const name = `${(record.first_name || "").trim()} ${(record.last_name || "").trim()}`.trim() || record.name || "this user";
+
+    Modal.confirm({
+      centered: true,
+      title: `Delete ${name}`,
+      content: `Are you sure you want to delete ${name}? This action cannot be undone.`,
+      okText: "Yes",
+      cancelText: "No",
+      onOk: () =>
+        dispatch(deleteUser(record.id))
+          .unwrap()
+          .then(() => {
+            message.success("User deleted");
+          })
+          .catch(() => {
+            message.error("Delete failed");
+          }),
+    });
   };
 
   return (
@@ -276,29 +297,22 @@ const filteredData = users.filter((user) => {
       {/* VIEW PROFILE MODAL */}
       <UserProfileModal
         open={viewModalOpen}
-        onClose={() => setViewModalOpen(false)}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedUser(null);
+        }}
         user={selectedUser}
       />
 
       {/* ADD / EDIT USER MODAL */}
       <AddUserModal
         open={addEditModalOpen}
-        onClose={() => setAddEditModalOpen(false)}
-        user={selectedUser}
-        onSave={(newUser) => {
-          setUsers((prev) => {
-            const index = prev.findIndex((u) => u.key === newUser.key);
-            if (index >= 0) {
-              const updated = [...prev];
-              updated[index] = newUser;
-              return updated;
-            } else {
-              return [newUser, ...prev];
-            }
-          });
-            dispatch(fetchStudents());
+        onClose={() => {
           setAddEditModalOpen(false);
+          setSelectedUser(null);
         }}
+        user={selectedUser}
+        mode={modalMode}
       />
     </div>
   );
