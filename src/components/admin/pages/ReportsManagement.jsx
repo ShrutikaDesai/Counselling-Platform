@@ -64,6 +64,7 @@ const reportData = [
   {
     key: 1,
     name: "Priya Sharma",
+    email: "priya.sharma@email.com",
     program: "Engineering Career Path",
     status: "Unlocked",
     paymentStatus: "Fully Paid",
@@ -73,6 +74,7 @@ const reportData = [
   {
     key: 2,
     name: "Rajesh Kumar",
+    email: "rajesh.kumar@email.com",
     program: "Medical Career Guidance",
     status: "Locked",
     paymentStatus: "Partial Paid",
@@ -82,6 +84,7 @@ const reportData = [
   {
     key: 3,
     name: "Anjali Verma",
+    email: "anjali.verma@email.com",
     program: "MBA Preparation",
     status: "Review Verification Pending",
     paymentStatus: "Fully Paid",
@@ -91,6 +94,7 @@ const reportData = [
   {
     key: 4,
     name: "Vikram Singh",
+    email: "vikram.singh@email.com",
     program: "Career Assessment",
     status: "Pending Upload",
     paymentStatus: "Pending",
@@ -100,6 +104,7 @@ const reportData = [
   {
     key: 5,
     name: "Sneha Patel",
+    email: "sneha.patel@email.com",
     program: "Law Career Guidance",
     status: "Review Verification Pending",
     paymentStatus: "Fully Paid",
@@ -109,6 +114,7 @@ const reportData = [
   {
     key: 6,
     name: "Rahul Mehta",
+    email: "rahul.mehta@email.com",
     program: "Data Science Career",
     status: "Review Verification Pending",
     paymentStatus: "Fully Paid",
@@ -118,6 +124,7 @@ const reportData = [
   {
     key: 7,
     name: "Kavita Nair",
+    email: "kavita.nair@email.com",
     program: "Design Thinking",
     status: "Unlocked",
     paymentStatus: "Fully Paid",
@@ -127,6 +134,7 @@ const reportData = [
   {
     key: 8,
     name: "Amit Joshi",
+    email: "amit.joshi@email.com",
     program: "Research Methodology",
     status: "Review Verification Pending",
     paymentStatus: "Partial Paid",
@@ -214,13 +222,22 @@ const ReportsManagement = () => {
       render: (_, __, index) => index + 1,
       responsive: ["xs", "sm", "md", "lg", "xl"],
     },
-    {
-      title: "Student Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text) => <Text strong>{text}</Text>,
-      responsive: ["xs", "sm", "md", "lg", "xl"],
-    },
+  {
+  title: "User",
+  dataIndex: "name",
+  key: "name",
+  render: (text, record) => (
+    <>
+      <Text strong>{text}</Text>
+      <br />
+      <Text type="colorTextSecondary" >
+        {record.email}
+      </Text>
+    </>
+  ),
+  responsive: ["xs", "sm", "md", "lg", "xl"],
+},
+
     {
       title: "Program",
       dataIndex: "program",

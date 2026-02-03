@@ -1,47 +1,57 @@
-import React, {useEffect}from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
 import {
-  Card,
   Form,
   Input,
   Button,
+  Card,
   Typography,
-  Avatar,
-  Divider,
-  Space,
   Row,
   Col,
+  Divider,
   ConfigProvider,
-  Grid,
   message,
 } from "antd";
-import { MailOutlined, UserOutlined, SafetyOutlined, LockOutlined } from "@ant-design/icons";
+import {
+  MailOutlined,
+  LockOutlined,
+  SafetyOutlined,
+} from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import adminTheme from "../../../theme/adminTheme";
-import {sendResetLink, verifyOtp, clearForgotPasswordState, resetOtpState, setEmailInState} from "../../../adminSlices/forgotPasswordSlice";
+import {
+  sendResetLink,
+  verifyOtp,
+  clearForgotPasswordState,
+  resetOtpState,
+  setEmailInState,
+} from "../../../adminSlices/forgotPasswordSlice";
 
 const { Title, Text } = Typography;
-const { useBreakpoint } = Grid;
 
 const ForgotPassword = () => {
-
-  const screens = useBreakpoint();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, successMessage, error, otpSent, otpVerified } = useSelector((state) => state.forgotPassword);
+  const navigate = useNavigate();
   const [form] = Form.useForm();
 
+  const { loading, successMessage, error, otpSent, otpVerified } = useSelector(
+    (state) => state.forgotPassword
+  );
+
+  /* ========= SUCCESS ========= */
   useEffect(() => {
     if (successMessage) {
       message.success(successMessage);
+
       if (otpVerified) {
         navigate("/resetpassword", { replace: true });
       } else {
         dispatch(clearForgotPasswordState());
       }
     }
-  }, [successMessage, dispatch, otpVerified, navigate]);
+  }, [successMessage, otpVerified, navigate, dispatch]);
 
+  /* ========= ERROR ========= */
   useEffect(() => {
     if (error) {
       message.error(error);
@@ -49,160 +59,205 @@ const ForgotPassword = () => {
     }
   }, [error, dispatch]);
 
-  const onFinishEmail = (values) => {
-    localStorage.setItem("resetEmail", values.email);
-    dispatch(setEmailInState(values.email));
-    dispatch(sendResetLink({ email: values.email }));
+  /* ========= EMAIL SUBMIT ========= */
+  const onFinishEmail = ({ email }) => {
+    localStorage.setItem("resetEmail", email);
+    dispatch(setEmailInState(email));
+    dispatch(sendResetLink({ email }));
   };
 
-  const onFinishOtp = (values) => {
-    localStorage.setItem("resetEmail", values.email);
-    dispatch(setEmailInState(values.email));
-    dispatch(verifyOtp({
-      email: values.email,
-      otp: values.otp,
-    }));
+  /* ========= OTP SUBMIT ========= */
+  const onFinishOtp = ({ email, otp }) => {
+    dispatch(
+      verifyOtp({
+        email,
+        otp,
+      })
+    );
   };
 
-  const handleReset = () => {
+  const handleChangeEmail = () => {
     form.resetFields();
     dispatch(resetOtpState());
   };
 
   return (
     <ConfigProvider theme={adminTheme}>
-      <Row
-        align="middle"
-        justify="center"
+      <div
         style={{
           minHeight: "100vh",
-          padding: screens.xs ? "16px" : "0",
-          background: `linear-gradient(135deg, ${adminTheme.token.colorPrimary}20, ${adminTheme.token.colorInfo}30)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 16,
+          background:
+            "linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%)",
         }}
       >
-        <Col xs={24} sm={22} md={16} lg={10} xl={8}>
-          <Card
-            bordered={false}
-            style={{
-              width: "100%",
-              borderRadius: 24,
-              boxShadow: adminTheme.token.boxShadow,
-              background: "rgba(255,255,255,0.96)",
-              padding: screens.xs ? "8px" : "16px",
-            }}
-          >
-            {/* ============ HEADER ============ */}
-            <Space
-              direction="vertical"
-              align="center"
-              size={10}
-              style={{ width: "100%", marginBottom: 12 }}
+        <Card
+          bordered={false}
+          style={{
+            width: "100%",
+            maxWidth: 920,
+            borderRadius: 24,
+            overflow: "hidden",
+            background:
+              "linear-gradient(135deg, #1E40AF, #6b85db)",
+            boxShadow:
+              "0 30px 70px rgba(30, 64, 175, 0.35)",
+          }}
+        >
+          <Row>
+            {/* ===== LEFT INFO PANEL ===== */}
+            <Col
+              xs={0}
+              md={10}
+              style={{
+                color: "#FFFFFF",
+                padding: "70px 40px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
             >
-              <Avatar
-                size={screens.xs ? 72 : 96}
-                icon={<UserOutlined />}
-                style={{ backgroundColor: adminTheme.token.colorPrimary }}
-              />
-
               <Title
-                level={screens.xs ? 3 : 2}
-                style={{ marginBottom: 0, textAlign: "center" }}
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 34,
+                  fontWeight: 700,
+                }}
               >
-                Forgot Password
+                Reset Password 🔐
               </Title>
 
               <Text
                 style={{
-                  fontSize: screens.xs ? 16 : 18,
-                  fontWeight: 500,
-                  color: adminTheme.token.colorPrimary,
-                  textAlign: "center",
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: 16,
+                  marginTop: 12,
+                  lineHeight: 1.6,
                 }}
               >
-                {otpSent ? "Enter the OTP sent to your email" : "Enter your email to reset your password"}
+                Secure your account by verifying your email and OTP.
               </Text>
-            </Space>
 
-            <Divider style={{ margin: "20px 0" }} />
+              <div style={{ marginTop: 40, paddingLeft: 10 }}>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ Email Verification
+                </Text>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ OTP Authentication
+                </Text>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ Password Recovery
+                </Text>
+              </div>
+            </Col>
 
-            {/* ============ FORM ============ */}
-            <Form 
-              form={form} 
-              layout="vertical" 
-              onFinish={otpSent ? onFinishOtp : onFinishEmail}
+            {/* ===== RIGHT FORM PANEL ===== */}
+            <Col
+              xs={24}
+              md={14}
+              style={{
+                padding: "48px 36px",
+                background: "rgba(255,255,255,0.95)",
+                backdropFilter: "blur(10px)",
+                borderRadius: "0 24px 24px 0",
+              }}
             >
-              {/* EMAIL FIELD */}
-              <Form.Item
-                label={<Text strong>Email Address</Text>}
-                name="email"
-                rules={[
-                  { required: true, message: "Email is required" },
-                  { type: "email", message: "Enter a valid email" },
-                ]}
-              >
-                <Input
-                  size="large"
-                  prefix={<MailOutlined />}
-                  placeholder="yourname@example.com"
-                  style={{ height: 48 }}
-                  allowClear
-                  disabled={otpSent}
-                />
-              </Form.Item>
+              <Title level={3} style={{ marginBottom: 6 }}>
+                Forgot Password
+              </Title>
 
-              {/* OTP FIELD - Shows after email is submitted */}
-              {otpSent && (
+              <Text type="colorTextSecondary">
+                {otpSent
+                  ? "Enter the OTP sent to your email"
+                  : "Enter your registered email to receive OTP"}
+              </Text>
+
+              <Form
+                layout="vertical"
+                form={form}
+                onFinish={otpSent ? onFinishOtp : onFinishEmail}
+                style={{ marginTop: 28 }}
+              >
+                {/* EMAIL */}
                 <Form.Item
-                  label={<Text strong>OTP Code</Text>}
-                  name="otp"
+                  label="Email Address"
+                  name="email"
                   rules={[
-                    { required: true, message: "OTP is required" },
-                    { pattern: /^\d{4,6}$/, message: "OTP must be 4-6 digits" },
+                    { required: true, message: "Email is required" },
+                    { type: "email", message: "Enter a valid email" },
                   ]}
                 >
                   <Input
+                    prefix={<MailOutlined />}
                     size="large"
-                    prefix={<LockOutlined />}
-                    placeholder="Enter OTP"
-                    style={{ height: 48 }}
-                    maxLength={6}
-                    allowClear
+                    placeholder="you@example.com"
+                    disabled={otpSent}
+                    style={{ borderRadius: 12 }}
                   />
                 </Form.Item>
-              )}
 
-              {/* SUBMIT BUTTON */}
-              <Form.Item style={{ marginTop: 24 }}>
+                {/* OTP */}
+                {otpSent && (
+                  <Form.Item
+                    label="OTP Code"
+                    name="otp"
+                    rules={[
+                      { required: true, message: "OTP is required" },
+                      { pattern: /^\d{4,6}$/, message: "Enter valid OTP" },
+                    ]}
+                  >
+                    <Input
+                      prefix={<LockOutlined />}
+                      size="large"
+                      placeholder="Enter OTP"
+                      maxLength={6}
+                      style={{ borderRadius: 12 }}
+                    />
+                  </Form.Item>
+                )}
+
+                {/* SUBMIT */}
                 <Button
                   type="primary"
                   htmlType="submit"
+                  size="large"
                   block
                   loading={loading}
-                  icon={otpSent ? <SafetyOutlined /> : <SafetyOutlined />}
-                  style={{ height: 52, borderRadius: 10 }}
+                  icon={<SafetyOutlined />}
+                  style={{
+                    height: 50,
+                    borderRadius: 30,
+                    fontSize: 16,
+                    fontWeight: 600,
+                  }}
                 >
                   {otpSent ? "Verify OTP" : "Send OTP"}
                 </Button>
-              </Form.Item>
 
-              {/* BACK BUTTON */}
-              <Row justify="center" style={{ marginTop: 16 }}>
+                <Divider style={{ margin: "28px 0" }} />
+
+                {/* FOOTER LINKS */}
                 <Text
                   style={{
-                    color: adminTheme.token.colorPrimary,
+                    textAlign: "center",
+                    display: "block",
                     cursor: "pointer",
-                    fontSize: 14,
-                    fontWeight: 500,
+                    color: "#1890ff",
                   }}
-                  onClick={() => otpSent ? handleReset() : (window.location.href = "/admin-login")}
+                  onClick={() =>
+                    otpSent ? handleChangeEmail() : navigate("/")
+                  }
                 >
                   {otpSent ? "Change Email" : "Back to Login"}
                 </Text>
-              </Row>
-            </Form>
-          </Card>
-        </Col>
-      </Row>
+              </Form>
+            </Col>
+          </Row>
+        </Card>
+      </div>
     </ConfigProvider>
   );
 };

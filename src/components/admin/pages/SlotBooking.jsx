@@ -50,6 +50,7 @@ const SlotBooking = () => {
     {
       key: "1",
       user: "Priya Sharma",
+      email: "priya.sharma@email.com",
       sessionType: "Initial Counselling",
       counsellors: [
         { name: "Dr. Ramesh Gupta", type: "lead" },
@@ -63,6 +64,7 @@ const SlotBooking = () => {
     {
       key: "2",
       user: "Rajesh Kumar",
+      email: "rajesh.kumar@email.com",
       sessionType: "Follow-up Session",
       counsellors: [{ name: "Ms. Priya Menon", type: "normal" }],
       date: "2026-01-12",
@@ -73,6 +75,7 @@ const SlotBooking = () => {
     {
       key: "3",
       user: "Anjali Verma",
+      email: "anjali.verma@email.com",
       sessionType: "Report Review",
       counsellors: [{ name: "Dr. Ramesh Gupta", type: "lead" }],
       date: "2026-01-16",
@@ -131,10 +134,18 @@ const SlotBooking = () => {
   const columns = [
     { title: "Sr. No.", width: 50, render: (_, __, index) => index + 1 },
     {
-      title: "Student Name",
+      title: "User Name",
       dataIndex: "user",
       width: 130,
-      render: (text) => <Text strong>{text}</Text>,
+       render: (text, record) => (
+    <>
+      <Text strong>{text}</Text>
+      <br />
+      <Text type="colorTextSecondary" >
+        {record.email}
+      </Text>
+    </>
+  ),
     },
     {
       title: "Counsellors",
@@ -339,8 +350,7 @@ const SlotBooking = () => {
             rowKey="key"
             pagination={{ pageSize }}
             size="small"
-            scroll={{ x: 900 }}
-            style={{ minWidth: 900 }}
+            scroll={{ x: "max-content" }}
           />
         </div>
       </Card>

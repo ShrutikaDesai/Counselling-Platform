@@ -1,272 +1,278 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-    Card,
-    Form,
-    Input,
-    Button,
-    Typography,
-    Avatar,
-    Divider,
-    Space,
-    Row,
-    Col,
-    ConfigProvider,
-    Grid,
-    message,
+  Card,
+  Form,
+  Input,
+  Button,
+  Typography,
+  Row,
+  Col,
+  Divider,
+  ConfigProvider,
+  message,
 } from "antd";
 import {
-    LockOutlined,
-    UserOutlined,
-    SafetyOutlined,
+  LockOutlined,
+  SafetyOutlined,
 } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
-import { resetPassword, clearResetPasswordState } from "../../../adminSlices/resetPasswordSlice";
-import { clearForgotPasswordState } from "../../../adminSlices/forgotPasswordSlice";
-
-
+import {
+  resetPassword,
+  clearResetPasswordState,
+} from "../../../adminSlices/resetPasswordSlice";
+import {
+  clearForgotPasswordState,
+} from "../../../adminSlices/forgotPasswordSlice";
 
 const { Title, Text } = Typography;
-const { useBreakpoint } = Grid;
 
 const ResetPassword = () => {
-    const screens = useBreakpoint();
-    const dispatch = useDispatch();
-    const { loading, error, success, successMessage } = useSelector((state) => state.resetPassword);
-    let { email } = useSelector((state) => state.forgotPassword);
-    const [form] = Form.useForm();
+  const dispatch = useDispatch();
+  const [form] = Form.useForm();
 
-    // Fallback to localStorage if Redux state is null
-    if (!email) {
-        email = localStorage.getItem("resetEmail");
-    }
+  const { loading, error, success, successMessage } = useSelector(
+    (state) => state.resetPassword
+  );
 
+  let { email } = useSelector((state) => state.forgotPassword);
 
-    const onFinish = (values) => {
-        dispatch(
-            resetPassword({
-                email: email,
-                new_password: values.new_password,
-                confirm_password: values.confirm_password,
-            })
-        );
-    };
+  // Fallback to localStorage
+  if (!email) {
+    email = localStorage.getItem("resetEmail");
+  }
 
-    useEffect(() => {
-        if (success) {
-            message.success(
-                successMessage || "Your password has been reset successfully. Please log in with your new password."
-            );
-            localStorage.removeItem("resetEmail");
-            dispatch(clearResetPasswordState());
-            dispatch(clearForgotPasswordState());
-            
-            // Delay redirect to show message
-            setTimeout(() => {
-                window.location.href = "/admin-login";
-            },3500);
-        }
-    }, [success, successMessage, dispatch]);
-
-    useEffect(() => {
-        if (error) {
-            message.error(error);
-        }
-    }, [error]);
-
-
-
-    // ================= PASSWORD VALIDATOR =================
-    const validatePassword = (_, value) => {
-        if (!value) {
-            return Promise.reject("Password is required");
-        }
-
-        if (value.length < 8) {
-            return Promise.reject("Password must be at least 8 characters long");
-        }
-
-        if (!/[A-Z]/.test(value)) {
-            return Promise.reject(
-                "Password must contain at least one uppercase letter"
-            );
-        }
-
-        if (!/[a-z]/.test(value)) {
-            return Promise.reject(
-                "Password must contain at least one lowercase letter"
-            );
-        }
-
-        if (!/\d/.test(value)) {
-            return Promise.reject(
-                "Password must contain at least one number"
-            );
-        }
-
-        if (!/[@$!%*?&]/.test(value)) {
-            return Promise.reject(
-                "Password must contain at least one special character (@$!%*?&)"
-            );
-        }
-
-        return Promise.resolve();
-    };
-
-
-
-    return (
-        <ConfigProvider theme={adminTheme}>
-            <Row
-                align="middle"
-                justify="center"
-                style={{
-                    minHeight: "100vh",
-                    padding: screens.xs ? "16px" : "0",
-                    background: `linear-gradient(135deg, ${adminTheme.token.colorPrimary}20, ${adminTheme.token.colorInfo}30)`,
-                }}
-            >
-                <Col xs={24} sm={22} md={16} lg={10} xl={8}>
-                    <Card
-                        bordered={false}
-                        style={{
-                            width: "100%",
-                            borderRadius: 24,
-                            boxShadow: adminTheme.token.boxShadow,
-                            background: "rgba(255,255,255,0.96)",
-                            padding: screens.xs ? "8px" : "16px",
-                        }}
-                    >
-                        {/* ================= HEADER ================= */}
-                        <Space
-                            direction="vertical"
-                            align="center"
-                            size={10}
-                            style={{ width: "100%", marginBottom: 12 }}
-                        >
-                            <Avatar
-                                size={screens.xs ? 72 : 96}
-                                icon={<UserOutlined />}
-                                style={{ backgroundColor: adminTheme.token.colorPrimary }}
-                            />
-
-                            <Title
-                                level={screens.xs ? 3 : 2}
-                                style={{ marginBottom: 0, textAlign: "center" }}
-                            >
-                                Reset Password
-                            </Title>
-
-                            <Text
-                                style={{
-                                    fontSize: screens.xs ? 16 : 18,
-                                    fontWeight: 500,
-                                    color: adminTheme.token.colorPrimary,
-                                    textAlign: "center",
-                                }}
-                            >
-                                Create a strong new password
-                            </Text>
-                        </Space>
-
-                        <Divider style={{ margin: "20px 0" }} />
-
-                        {/* ================= FORM ================= */}
-                        <Form layout="vertical" onFinish={onFinish} form={form}>
-                            {/* NEW PASSWORD */}
-                            <Form.Item
-                                label={<Text strong>New Password</Text>}
-                                name="new_password"
-                                hasFeedback
-                                rules={[
-                                    {
-                                        validator: validatePassword,
-                                    },
-                                ]}
-                            >
-                                <Input.Password
-                                    size="large"
-                                    prefix={<LockOutlined />}
-                                    placeholder="Enter new password"
-                                    style={{ height: 48 }}
-                                />
-                            </Form.Item>
-
-                            {/* CONFIRM PASSWORD */}
-                            <Form.Item
-                                label={<Text strong>Confirm Password</Text>}
-                                name="confirm_password"
-                                dependencies={["new_password"]}
-                                hasFeedback
-                                rules={[
-                                    { required: true, message: "Please confirm your password" },
-                                    ({ getFieldValue }) => ({
-                                        validator(_, value) {
-                                            if (!value) {
-                                                return Promise.reject(
-                                                    "Confirm password is required"
-                                                );
-                                            }
-
-                                            if (value !== getFieldValue("new_password")) {
-                                                return Promise.reject(
-                                                    "Passwords do not match"
-                                                );
-                                            }
-
-                                            return Promise.resolve();
-                                        },
-                                    }),
-                                ]}
-                            >
-                                <Input.Password
-                                    size="large"
-                                    prefix={<LockOutlined />}
-                                    placeholder="Re-enter new password"
-                                    style={{ height: 48 }}
-                                />
-                            </Form.Item>
-
-                            {/* SUBMIT */}
-                            <Form.Item style={{ marginTop: 28 }}>
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    block
-                                    loading={loading}
-                                    icon={<SafetyOutlined />}
-                                    style={{
-                                        height: 52,
-                                        fontWeight: 600,
-                                        fontSize: 16,
-                                        borderRadius: 10,
-                                    }}
-                                >
-                                    Reset Password
-                                </Button>
-
-                            </Form.Item>
-
-                            {/* FOOTER */}
-                            <Row justify="center">
-                                <Text
-                                    style={{
-                                        color: adminTheme.token.colorPrimary,
-                                        cursor: "pointer",
-                                        fontSize: 14,
-                                        fontWeight: 500,
-                                    }}
-                                    onClick={() => (window.location.href = "/admin-login")}
-                                >
-                                    Back to Login
-                                </Text>
-                            </Row>
-                        </Form>
-                    </Card>
-                </Col>
-            </Row>
-        </ConfigProvider>
+  /* ================= SUBMIT ================= */
+  const onFinish = (values) => {
+    dispatch(
+      resetPassword({
+        email,
+        new_password: values.new_password,
+        confirm_password: values.confirm_password,
+      })
     );
+  };
+
+  /* ================= SUCCESS ================= */
+  useEffect(() => {
+    if (success) {
+      message.success(
+        successMessage ||
+          "Password reset successfully. Please login with your new password."
+      );
+
+      localStorage.removeItem("resetEmail");
+      dispatch(clearResetPasswordState());
+      dispatch(clearForgotPasswordState());
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 3000);
+    }
+  }, [success, successMessage, dispatch]);
+
+  /* ================= ERROR ================= */
+  useEffect(() => {
+    if (error) {
+      message.error(error);
+    }
+  }, [error]);
+
+  /* ================= PASSWORD VALIDATION ================= */
+  const validatePassword = (_, value) => {
+    if (!value) return Promise.reject("Password is required");
+    if (value.length < 8)
+      return Promise.reject("Minimum 8 characters required");
+    if (!/[A-Z]/.test(value))
+      return Promise.reject("At least one uppercase letter required");
+    if (!/[a-z]/.test(value))
+      return Promise.reject("At least one lowercase letter required");
+    if (!/\d/.test(value))
+      return Promise.reject("At least one number required");
+    if (!/[@$!%*?&]/.test(value))
+      return Promise.reject("At least one special character required");
+    return Promise.resolve();
+  };
+
+  return (
+    <ConfigProvider theme={adminTheme}>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 16,
+          background:
+            "linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%)",
+        }}
+      >
+        <Card
+          bordered={false}
+          style={{
+            width: "100%",
+            maxWidth: 920,
+            borderRadius: 24,
+            overflow: "hidden",
+            background:
+              "linear-gradient(135deg, #1E40AF, #6b85db)",
+            boxShadow:
+              "0 30px 70px rgba(30, 64, 175, 0.35)",
+          }}
+        >
+          <Row>
+            {/* ===== LEFT INFO PANEL ===== */}
+            <Col
+              xs={0}
+              md={10}
+              style={{
+                color: "#FFFFFF",
+                padding: "70px 40px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <Title
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 34,
+                  fontWeight: 700,
+                }}
+              >
+                Create New Password 🔒
+              </Title>
+
+              <Text
+                style={{
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: 16,
+                  marginTop: 12,
+                  lineHeight: 1.6,
+                }}
+              >
+                Choose a strong password to keep your account secure.
+              </Text>
+
+              <div style={{ marginTop: 40, paddingLeft: 10 }}>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ Strong password rules
+                </Text>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ Secure account access
+                </Text>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ One-time reset flow
+                </Text>
+              </div>
+            </Col>
+
+            {/* ===== RIGHT FORM PANEL ===== */}
+            <Col
+              xs={24}
+              md={14}
+              style={{
+                padding: "48px 36px",
+                background: "rgba(255,255,255,0.95)",
+                backdropFilter: "blur(10px)",
+                borderRadius: "0 24px 24px 0",
+              }}
+            >
+              <Title level={3} style={{ marginBottom: 6 }}>
+                Reset Password
+              </Title>
+
+              <Text type="colorTextSecondary">
+                Enter and confirm your new password
+              </Text>
+
+              <Form
+                layout="vertical"
+                form={form}
+                onFinish={onFinish}
+                style={{ marginTop: 28 }}
+              >
+                {/* NEW PASSWORD */}
+                <Form.Item
+                  label="New Password"
+                  name="new_password"
+                  hasFeedback
+                  rules={[{ validator: validatePassword }]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    size="large"
+                    placeholder="Enter new password"
+                    style={{ borderRadius: 12 }}
+                  />
+                </Form.Item>
+
+                {/* CONFIRM PASSWORD */}
+                <Form.Item
+                  label="Confirm Password"
+                  name="confirm_password"
+                  dependencies={["new_password"]}
+                  hasFeedback
+                  rules={[
+                    { required: true, message: "Confirm password is required" },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value)
+                          return Promise.reject("Confirm password required");
+                        if (value !== getFieldValue("new_password"))
+                          return Promise.reject("Passwords do not match");
+                        return Promise.resolve();
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    size="large"
+                    placeholder="Re-enter new password"
+                    style={{ borderRadius: 12 }}
+                  />
+                </Form.Item>
+
+                {/* SUBMIT */}
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  block
+                  loading={loading}
+                  icon={<SafetyOutlined />}
+                  style={{
+                    height: 50,
+                    borderRadius: 30,
+                    fontSize: 16,
+                    fontWeight: 600,
+                  }}
+                >
+                  Reset Password
+                </Button>
+
+                <Divider style={{ margin: "28px 0" }} />
+
+                {/* FOOTER */}
+                <Text
+                  style={{
+                    textAlign: "center",
+                    display: "block",
+                    cursor: "pointer",
+                    color: "#1890ff",
+                  }}
+                  onClick={() => (window.location.href = "/")}
+                >
+                  Back to Login
+                </Text>
+              </Form>
+            </Col>
+          </Row>
+        </Card>
+      </div>
+    </ConfigProvider>
+  );
 };
 
 export default ResetPassword;

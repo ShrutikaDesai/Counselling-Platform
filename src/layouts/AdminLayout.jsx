@@ -347,7 +347,7 @@ const AdminLayout = () => {
     // Clear redux auth state
     dispatch(logout());
 
-    navigate("/admin-login", { replace: true });
+    navigate("/", { replace: true });
     setDrawerVisible(false);
   };
 

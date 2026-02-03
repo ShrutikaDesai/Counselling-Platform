@@ -30,15 +30,30 @@ const { Title, Text } = Typography;
 
 const ExamManagement = () => {
   const [statusModalVisible, setStatusModalVisible] = useState(false);
-  const [instructionsModalVisible, setInstructionsModalVisible] = useState(false);
+  const [instructionsModalVisible, setInstructionsModalVisible] =
+    useState(false);
+
+  // exam status state
+  const [examStatus, setExamStatus] = useState("not_started");
+  // not_started | in_progress | completed
 
   const { useToken } = theme;
-  
+
+  const handleStartExam = () => {
+    window.open("https://external-exam-platform.com", "_blank");
+    setExamStatus("in_progress");
+  };
+
+  const handleMarkCompleted = () => {
+    setExamStatus("completed");
+  };
+
   const PageContent = () => {
     const { token } = useToken();
 
     return (
       <div style={{ minHeight: "100vh" }}>
+        {/* HEADER */}
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <Title level={2} style={{ marginBottom: 6 }}>
             Career Assessment Test
@@ -48,43 +63,39 @@ const ExamManagement = () => {
           </Text>
         </div>
 
-        {/* Action Buttons - top right */}
-        <div style={{ 
-          display: "flex", 
-          justifyContent: "flex-end", 
-          gap: 12,
-          marginBottom: 12,
-          flexWrap: "wrap" 
-        }}>
+        {/* ACTION BUTTONS */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 12,
+            marginBottom: 12,
+            flexWrap: "wrap",
+          }}
+        >
           <Button
-            type="default"
             size="large"
             icon={<QuestionCircleOutlined />}
             style={{
               borderRadius: 8,
               backgroundColor: token.colorPrimary,
               color: "#fff",
-              fontWeight: "600",
+              fontWeight: 600,
               border: "none",
-              boxShadow: token.boxShadow,
-              transition: "transform 0.12s ease, box-shadow 0.12s ease",
             }}
             onClick={() => setInstructionsModalVisible(true)}
           >
             Instructions
           </Button>
-          
+
           <Button
-            type="default"
             size="large"
             style={{
               borderRadius: 8,
               backgroundColor: token.colorSuccess,
               color: "#fff",
-              fontWeight: "600",
+              fontWeight: 600,
               border: "none",
-              boxShadow: token.boxShadow,
-              transition: "transform 0.12s ease, box-shadow 0.12s ease",
             }}
             onClick={() => setStatusModalVisible(true)}
           >
@@ -93,23 +104,15 @@ const ExamManagement = () => {
         </div>
 
         <Row gutter={[32, 32]} justify="center">
-          {/* LEFT COLUMN - Removed Important Instructions card */}
+          {/* LEFT COLUMN */}
           <Col xs={24} md={16}>
-            {/* EXAM SECTIONS */}
-            <Title
-              level={5}
-              style={{ marginBottom: 18, display: "flex", gap: 8 }}
-            >
-              <AppstoreOutlined />
-              Exam Sections
+            <Title level={5} style={{ marginBottom: 18 }}>
+              <AppstoreOutlined /> Exam Sections
             </Title>
 
             <Row gutter={[20, 20]}>
               {[
-                {
-                  title: "Aptitude & Reasoning",
-                  meta: "30 questions • 20 minutes",
-                },
+                { title: "Aptitude & Reasoning", meta: "30 questions • 20 minutes" },
                 {
                   title: "Interest & Personality",
                   meta: "40 questions • 25 minutes",
@@ -118,18 +121,13 @@ const ExamManagement = () => {
                   title: "Subject Preference",
                   meta: "20 questions • 10 minutes",
                 },
-                {
-                  title: "Career Values",
-                  meta: "10 questions • 5 minutes",
-                },
+                { title: "Career Values", meta: "10 questions • 5 minutes" },
               ].map((section, index) => (
                 <Col xs={24} md={12} key={index}>
                   <Card
                     hoverable
                     style={{
                       borderRadius: 14,
-                      height: "100%",
-                      transition: "all 0.3s",
                       boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
                     }}
                   >
@@ -151,7 +149,9 @@ const ExamManagement = () => {
               }}
             >
               <Title level={5}>
-                <InfoCircleOutlined style={{ color: token.colorPrimary, marginRight: 6 }} />
+                <InfoCircleOutlined
+                  style={{ color: token.colorPrimary, marginRight: 6 }}
+                />
                 Before You Begin
               </Title>
 
@@ -164,10 +164,10 @@ const ExamManagement = () => {
                 ]}
                 renderItem={(item) => (
                   <List.Item>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <CheckCircleOutlined style={{ color: token.colorSuccess }} />
-                      <Text>{item}</Text>
-                    </div>
+                    <CheckCircleOutlined
+                      style={{ color: token.colorSuccess, marginRight: 6 }}
+                    />
+                    <Text>{item}</Text>
                   </List.Item>
                 )}
               />
@@ -180,15 +180,13 @@ const ExamManagement = () => {
                 marginTop: 32,
                 background: "linear-gradient(90deg,#fff7e6,#fff1b8)",
                 border: "1px solid #faad14",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
               }}
             >
               <Title level={5}>
-                <LockOutlined style={{ marginRight: 8 }} />
-                Payment Status
+                <LockOutlined /> Payment Status
               </Title>
               <Text strong>
-                This exam is included in your <Tag color="gold">Premium Package</Tag>
+                Included in <Tag color="gold">Premium Package</Tag>
               </Text>
             </Card>
           </Col>
@@ -203,7 +201,20 @@ const ExamManagement = () => {
                     boxShadow: "0 15px 35px rgba(0,0,0,0.08)",
                   }}
                 >
-                  <Title level={4}>Exam Details</Title>
+                  <Title level={4}>
+                    Exam Details{" "}
+                    <Tag
+                      color={
+                        examStatus === "completed"
+                          ? "green"
+                          : examStatus === "in_progress"
+                          ? "orange"
+                          : "blue"
+                      }
+                    >
+                      {examStatus.replace("_", " ").toUpperCase()}
+                    </Tag>
+                  </Title>
 
                   <Divider />
 
@@ -238,30 +249,92 @@ const ExamManagement = () => {
 
                   <Divider />
 
-                  <Button
-                    type="primary"
-                    size="large"
-                    block
-                    style={{
-                      borderRadius: 10,
-                      height: 48,
-                      fontSize: 16,
-                    }}
-                    onClick={() => console.log("Start Exam")}
-                  >
-                    Start Exam
-                  </Button>
+                  {/* BUTTON STATES */}
+                  {examStatus === "not_started" && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      block
+                      style={{ borderRadius: 10, height: 48 }}
+                      onClick={handleStartExam}
+                    >
+                      Start Exam
+                    </Button>
+                  )}
+
+                  {examStatus === "in_progress" && (
+                    <>
+                      <Button
+                        block
+                        disabled
+                        style={{
+                          borderRadius: 10,
+                          height: 48,
+                          background: "#fff7e6",
+                          borderColor: "#faad14",
+                          color: "#fa8c16",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Exam In Progress
+                      </Button>
+
+                      <Text
+                        type="colorTextSecondary"
+                        style={{
+                          display: "block",
+                          marginTop: 12,
+                          fontSize: 13,
+                          textAlign: "center",
+                        }}
+                      >
+                        Complete the exam on the external platform.
+                        <br />
+                        Click below after final submission.
+                      </Text>
+
+                      <Button
+                        type="primary"
+                        block
+                        style={{
+                          marginTop: 12,
+                          background: "#52c41a",
+                          borderColor: "#52c41a",
+                        }}
+                        onClick={handleMarkCompleted}
+                      >
+                        Mark as Completed
+                      </Button>
+                    </>
+                  )}
+
+                  {examStatus === "completed" && (
+                    <Button
+                      block
+                      disabled
+                      style={{
+                        borderRadius: 10,
+                        height: 48,
+                        background: "#f6ffed",
+                        borderColor: "#b7eb8f",
+                        color: "#389e0d",
+                        fontWeight: 600,
+                      }}
+                    >
+                      ✅ Exam Completed
+                    </Button>
+                  )}
 
                   <Text
                     type="colorTextSecondary"
                     style={{
                       display: "block",
                       textAlign: "center",
-                      marginTop: 8,
+                      marginTop: 10,
                       fontSize: 12,
                     }}
                   >
-                    Note: This will redirect to an external assessment platform
+                    External assessment platform
                   </Text>
                 </Card>
               </Badge.Ribbon>
@@ -275,13 +348,12 @@ const ExamManagement = () => {
   return (
     <ConfigProvider theme={adminTheme}>
       <PageContent />
-      
-      {/* Imported Modals */}
+
       <InstructionsModal
         open={instructionsModalVisible}
         onClose={() => setInstructionsModalVisible(false)}
       />
-      
+
       <StatusTrackingModal
         open={statusModalVisible}
         onClose={() => setStatusModalVisible(false)}

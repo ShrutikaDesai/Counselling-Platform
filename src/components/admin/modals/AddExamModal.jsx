@@ -1,8 +1,16 @@
 import React from "react";
-import { Modal, Form, Input, DatePicker, TimePicker, Select, Row, Col } from "antd";
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  Row,
+  Col,
+} from "antd";
 import dayjs from "dayjs";
 
 const { Option } = Select;
+const { TextArea } = Input;
 
 const AddExamModal = ({ open, onCancel, onCreate, editingExam, mode }) => {
   const [form] = Form.useForm();
@@ -12,13 +20,9 @@ const AddExamModal = ({ open, onCancel, onCreate, editingExam, mode }) => {
       form.setFieldsValue({
         name: editingExam.name,
         program: editingExam.program,
-        date: editingExam.date ? dayjs(editingExam.date) : null,
-        duration: editingExam.duration
-          ? dayjs()
-              .hour(Math.floor(editingExam.duration / 60))
-              .minute(editingExam.duration % 60)
-          : null,
         link: editingExam.link,
+        instructions: editingExam.instructions,
+        package: editingExam.package, // ✅ NEW
       });
     } else {
       form.resetFields();
@@ -27,13 +31,8 @@ const AddExamModal = ({ open, onCancel, onCreate, editingExam, mode }) => {
 
   const handleOk = () => {
     form.validateFields().then((values) => {
-      const durationInMinutes = values.duration
-        ? values.duration.hour() * 60 + values.duration.minute()
-        : 0;
-
       onCreate({
         ...values,
-        duration: durationInMinutes,
       });
       form.resetFields();
     });
@@ -48,9 +47,9 @@ const AddExamModal = ({ open, onCancel, onCreate, editingExam, mode }) => {
       okText={mode === "edit" ? "Update" : "Add"}
     >
       <Form layout="vertical" form={form}>
-        {/* Row 1: Exam Name and Program */}
+        {/* Row 1: Exam Name & Program */}
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={24}>
             <Form.Item
               label="Exam Name"
               name="name"
@@ -60,6 +59,24 @@ const AddExamModal = ({ open, onCancel, onCreate, editingExam, mode }) => {
             </Form.Item>
           </Col>
 
+          {/* <Col span={12}>
+            <Form.Item
+              label="Program"
+              name="program"
+              rules={[{ required: true, message: "Please select program" }]}
+            >
+              <Select placeholder="Select program">
+                <Option value="Mathematics">Mathematics</Option>
+                <Option value="Physics">Physics</Option>
+                <Option value="Chemistry">Chemistry</Option>
+                <Option value="Biology">Biology</Option>
+              </Select>
+            </Form.Item>
+          </Col> */}
+        </Row>
+
+        {/* Row 2: Package (NEW) */}
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               label="Program"
@@ -74,36 +91,51 @@ const AddExamModal = ({ open, onCancel, onCreate, editingExam, mode }) => {
               </Select>
             </Form.Item>
           </Col>
-        </Row>
-
-        {/* Row 2: Date and Duration */}
-        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              label="Date"
-              name="date"
-              rules={[{ required: true, message: "Please select date" }]}
+              label="Package"
+              name="package"
+              rules={[{ required: true, message: "Please select a package" }]}
             >
-              <DatePicker style={{ width: "100%" }} />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
-              label="Duration"
-              name="duration"
-              rules={[{ required: true, message: "Please select duration" }]}
-            >
-              <TimePicker format="HH:mm" style={{ width: "100%" }} />
+              <Select placeholder="Select package">
+                <Option value="Free">Free</Option>
+                <Option value="Basic">Basic</Option>
+                <Option value="Premium">Premium</Option>
+              </Select>
             </Form.Item>
           </Col>
         </Row>
 
-        {/* Row 3: Link */}
+        {/* Row 3: Exam Link */}
         <Row gutter={16}>
           <Col span={24}>
-            <Form.Item label="Link" name="link">
-              <Input />
+            <Form.Item
+              label="Exam Link"
+              name="link"
+              rules={[
+                { required: true, message: "Please enter exam link" },
+                { type: "url", message: "Please enter a valid URL" },
+              ]}
+            >
+              <Input placeholder="https://example.com/exam" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* Row 4: Instructions */}
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item
+              label="Instructions"
+              name="instructions"
+              rules={[
+                { required: true, message: "Please enter exam instructions" },
+              ]}
+            >
+              <TextArea
+                rows={4}
+                placeholder="Enter exam instructions here..."
+              />
             </Form.Item>
           </Col>
         </Row>

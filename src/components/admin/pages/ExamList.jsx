@@ -5,7 +5,6 @@ import {
   Tag,
   Typography,
   message,
-  Popconfirm,
   Space,
   Button,
   Input,
@@ -13,6 +12,8 @@ import {
   Row,
   Col,
   Select,
+  Switch,
+  Modal,
 } from "antd";
 import {
   EditOutlined,
@@ -20,13 +21,11 @@ import {
   PlusOutlined,
   SearchOutlined,
   EyeOutlined,
-  LinkOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import adminTheme from "../../../theme/adminTheme";
 import dayjs from "dayjs";
 import AddExamModal from "../modals/AddExamModal";
 
-const { token } = adminTheme;
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -36,212 +35,211 @@ const ExamList = () => {
       key: 1,
       name: "Mathematics Final Exam",
       program: "Mathematics",
-      date: "2026-02-10",
-      duration: 120,
-      status: "Scheduled",
-      link: "https://example.com/math-final",
+      package: "Premium",
+      created_at: "2026-02-10",
+      status: true,
     },
     {
       key: 2,
       name: "Physics Midterm",
       program: "Physics",
-      date: "2026-03-15",
-      duration: 90,
-      status: "Scheduled",
-      link: "https://example.com/physics-midterm",
+      package: "Basic",
+      created_at: "2026-03-15",
+      status: false,
     },
     {
       key: 3,
       name: "Chemistry Test",
       program: "Chemistry",
-      date: "2026-04-05",
-      duration: 60,
-      status: "Completed",
-      link: "https://example.com/chemistry-test",
+      package: "Free",
+      created_at: "2026-04-05",
+      status: true,
     },
   ]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingExam, setEditingExam] = useState(null);
   const [modalMode, setModalMode] = useState("create");
+
+  /* -------- CONFIRM MODAL STATES -------- */
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmType, setConfirmType] = useState(""); // status | delete
+  const [selectedRecord, setSelectedRecord] = useState(null);
+
+  /* -------- FILTER STATES -------- */
   const [searchText, setSearchText] = useState("");
   const [filterDate, setFilterDate] = useState(null);
   const [filterProgram, setFilterProgram] = useState(null);
+  const [filterPackage, setFilterPackage] = useState(null);
 
-  const handleCreate = (values) => {
-    const examData = {
-      name: values.name,
-      program: values.program,
-      date: values.date.format("YYYY-MM-DD"),
-      duration: values.duration,
-      status: values.status || "Scheduled",
-      link: values.link || "",
-    };
+  /* -------- OPEN CONFIRM MODAL -------- */
+  const openConfirmModal = (type, record) => {
+    setConfirmType(type);
+    setSelectedRecord(record);
+    setConfirmOpen(true);
+  };
 
-    if (modalMode === "edit" && editingExam) {
+  /* -------- CONFIRM ACTION -------- */
+  const handleConfirmOk = () => {
+    if (!selectedRecord) return;
+
+    if (confirmType === "status") {
       setExams((prev) =>
         prev.map((exam) =>
-          exam.key === editingExam.key ? { ...exam, ...examData } : exam
+          exam.key === selectedRecord.key
+            ? { ...exam, status: !exam.status }
+            : exam
         )
       );
-      message.success("Exam updated successfully!");
-    } else {
-      setExams((prev) => [{ key: Date.now(), ...examData }, ...prev]);
-      message.success("Exam created successfully!");
+
+      message.success(
+        `Exam ${
+          selectedRecord.status ? "Inactivated" : "Activated"
+        } successfully`
+      );
     }
 
-    setModalOpen(false);
-    setEditingExam(null);
-    setModalMode("create");
+    if (confirmType === "delete") {
+      setExams((prev) =>
+        prev.filter((exam) => exam.key !== selectedRecord.key)
+      );
+      message.success("Exam deleted successfully");
+    }
+
+    setConfirmOpen(false);
+    setSelectedRecord(null);
+    setConfirmType("");
   };
 
-  const handleEdit = (record) => {
-    setEditingExam(record);
-    setModalMode("edit");
-    setModalOpen(true);
-  };
-
-  const handleView = (record) => {
-    setEditingExam(record);
-    setModalMode("view");
-    setModalOpen(true);
-  };
-
-  const handleDelete = (key) => {
-    setExams((prev) => prev.filter((exam) => exam.key !== key));
-    message.success("Exam deleted successfully!");
-  };
-
+  /* -------- FILTER LOGIC -------- */
   const filteredExams = exams.filter((exam) => {
     const search = searchText.toLowerCase();
+
     const matchesSearch =
       exam.name.toLowerCase().includes(search) ||
-      exam.program.toLowerCase().includes(search);
+      exam.program.toLowerCase().includes(search) ||
+      exam.package.toLowerCase().includes(search);
 
     const matchesDate = filterDate
-      ? exam.date === dayjs(filterDate).format("YYYY-MM-DD")
+      ? exam.created_at === dayjs(filterDate).format("YYYY-MM-DD")
       : true;
 
-    const matchesProgram = filterProgram ? exam.program === filterProgram : true;
+    const matchesProgram = filterProgram
+      ? exam.program === filterProgram
+      : true;
 
-    return matchesSearch && matchesDate && matchesProgram;
+    const matchesPackage = filterPackage
+      ? exam.package === filterPackage
+      : true;
+
+    return matchesSearch && matchesDate && matchesProgram && matchesPackage;
   });
 
+  /* -------- TABLE COLUMNS -------- */
   const columns = [
     {
       title: "Sr. No.",
       render: (_, __, index) => index + 1,
-      responsive: ["xs", "sm", "md", "lg", "xl"],
     },
     {
       title: "Exam Name",
       dataIndex: "name",
-      responsive: ["xs", "sm", "md", "lg", "xl"],
     },
     {
       title: "Program",
       dataIndex: "program",
-      responsive: ["xs", "sm", "md", "lg", "xl"],
     },
     {
-      title: "Date & Duration",
-      render: (_, record) => (
-        <>
-          {record.date} <br />
-          {record.duration} mins
-        </>
-      ),
-      responsive: ["xs", "sm", "md", "lg", "xl"],
+      title: "Package",
+      dataIndex: "package",
     },
     {
       title: "Status",
-      dataIndex: "status",
-      render: (s) => <Tag color={s === "Scheduled" ? "blue" : "green"}>{s}</Tag>,
-      responsive: ["sm", "md", "lg", "xl"],
+      render: (_, record) => (
+        <Space>
+          <Tag color={record.status ? "green" : "red"}>
+            {record.status ? "Active" : "Inactive"}
+          </Tag>
+          <Switch
+            checked={record.status}
+            onClick={() => openConfirmModal("status", record)}
+          />
+        </Space>
+      ),
     },
     {
-      title: "Link",
-      dataIndex: "link",
-      render: (link) =>
-        link ? (
-          <a href={link} target="_blank" rel="noopener noreferrer">
-            View Link
-          </a>
-        ) : (
-          <Text type="secondary">N/A</Text>
-        ),
-      responsive: ["sm", "md", "lg", "xl"],
+      title: "Created At",
+      dataIndex: "created_at",
     },
- {
-  title: "Actions",
-  render: (_, record) => (
-    <Space>
-      <Button
-        size="large"
-        icon={<EyeOutlined />}
-        onClick={() => handleView(record)}
-      >
-        View
-      </Button>
+    {
+      title: "Actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setEditingExam(record);
+              setModalMode("view");
+              setModalOpen(true);
+            }}
+          >
+            View
+          </Button>
 
-      <Button
-        type="primary"
-        icon={<EditOutlined />}
-        onClick={() => handleEdit(record)}
-      >
-        Edit
-      </Button>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEditingExam(record);
+              setModalMode("edit");
+              setModalOpen(true);
+            }}
+          >
+            Edit
+          </Button>
 
-      <Popconfirm
-        title="Delete this exam?"
-        onConfirm={() => handleDelete(record.key)}
-      >
-        <Button size="large" danger icon={<DeleteOutlined />}>
-          Delete
-        </Button>
-      </Popconfirm>
-    </Space>
-  ),
-},
-
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => openConfirmModal("delete", record)}
+          >
+            Delete
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   return (
     <div style={{ padding: 20 }}>
-      <Row justify="space-between" align="middle" gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={12}>
-          <Title level={3}>Manage Exams</Title>
-        </Col>
-        <Col xs={24} sm={24} md={12} style={{ textAlign: "right" }}>
-          <Button
-  type="primary"
-  icon={<PlusOutlined />}
-  onClick={() => {
-    setEditingExam(null); // clear previous exam
-    setModalMode("create"); // set mode
-    setModalOpen(true); // open modal
-  }}
->
-  Add Exam
-</Button>
-
-        </Col>
+      <Row justify="space-between" align="middle">
+        <Title level={3}>Manage Exams</Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setEditingExam(null);
+            setModalMode("create");
+            setModalOpen(true);
+          }}
+        >
+          Add Exam
+        </Button>
       </Row>
-      <br />
 
-      <Card>
+      <Card style={{ marginTop: 16 }}>
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={24} md={8}>
+          <Col md={6}>
             <Input
               placeholder="Search exam..."
               prefix={<SearchOutlined />}
+              allowClear
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              allowClear
             />
           </Col>
 
-          <Col xs={24} sm={12} md={6}>
+          <Col md={6}>
             <Select
               placeholder="Filter by program"
               allowClear
@@ -249,15 +247,31 @@ const ExamList = () => {
               value={filterProgram}
               onChange={setFilterProgram}
             >
-              {exams.map((e) => (
-                <Option key={e.program} value={e.program}>
-                  {e.program}
+              {[...new Set(exams.map((e) => e.program))].map((p) => (
+                <Option key={p} value={p}>
+                  {p}
                 </Option>
               ))}
             </Select>
           </Col>
 
-          <Col xs={24} sm={12} md={6}>
+          <Col md={6}>
+            <Select
+              placeholder="Filter by package"
+              allowClear
+              style={{ width: "100%" }}
+              value={filterPackage}
+              onChange={setFilterPackage}
+            >
+              {[...new Set(exams.map((e) => e.package))].map((p) => (
+                <Option key={p} value={p}>
+                  {p}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+
+          <Col md={6}>
             <DatePicker
               placeholder="Filter by date"
               style={{ width: "100%" }}
@@ -276,6 +290,38 @@ const ExamList = () => {
         />
       </Card>
 
+      {/* ---------- CONFIRMATION MODAL ---------- */}
+      <Modal
+        open={confirmOpen}
+        centered
+        title={
+          <Space>
+            <ExclamationCircleOutlined style={{ color: "#faad14" }} />
+            Confirmation
+          </Space>
+        }
+        okText="Yes, Confirm"
+        cancelText="Cancel"
+        okButtonProps={{
+          danger: confirmType === "delete",
+        }}
+        onOk={handleConfirmOk}
+        onCancel={() => setConfirmOpen(false)}
+      >
+        <Text>
+          {confirmType === "status" &&
+            `Are you sure you want to ${
+              selectedRecord?.status ? "inactivate" : "activate"
+            } this exam?`}
+          {confirmType === "delete" &&
+            "Are you sure you want to delete this exam?"}
+        </Text>
+
+        <div style={{ marginTop: 8 }}>
+          <Text strong>{selectedRecord?.name}</Text>
+        </div>
+      </Modal>
+
       <AddExamModal
         open={modalOpen}
         editingExam={editingExam}
@@ -285,7 +331,6 @@ const ExamList = () => {
           setEditingExam(null);
           setModalMode("create");
         }}
-        onCreate={handleCreate}
       />
     </div>
   );

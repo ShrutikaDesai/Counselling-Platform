@@ -18,10 +18,9 @@ import {
   ClockCircleOutlined,
   ExclamationCircleOutlined,
   MinusCircleOutlined,
-  ExportOutlined,
-  SearchOutlined,
   UnlockOutlined,
   BellOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import adminTheme from "../../../theme/adminTheme";
 
@@ -30,43 +29,55 @@ const { Option } = Select;
 const { confirm } = Modal;
 
 const ExamManagements = () => {
-  // ---------------- DATA ----------------
-  const [examRecords, setExamRecords] = useState([
-    {
-      key: 1,
-      userName: "Priya Sharma",
-      program: "Engineering Career Path",
-      status: "Awaiting Approval",
-      completedDate: "2026-01-05",
+  /* ================= DATA ================= */
+const [examRecords, setExamRecords] = useState([
+  {
+    key: 1,
+    userName: "Priya Sharma",
+    email: "priya.sharma@email.com",
+    program: "Engineering Career Path",
+    status: "Awaiting Approval",
+    completedDate: "-",
+    approvedBy: null,
+  },
+  {
+    key: 2,
+    userName: "Rajesh Kumar",
+    email: "rajesh.kumar@email.com",
+    program: "Medical Career Guidance",
+    status: "In Progress",
+    completedDate: "-",
+    approvedBy: null,
+  },
+  {
+    key: 3,
+    userName: "Anjali Verma",
+    email: "anjali.verma@email.com",
+    program: "MBA Preparation",
+    status: "Completed",
+    completedDate: "2026-01-10",
+    approvedBy: {
+      name: "Admin John",
+      role: "Admin",
     },
-    {
-      key: 2,
-      userName: "Rajesh Kumar",
-      program: "Medical Career Guidance",
-      status: "In Progress",
-      completedDate: "-",
-    },
-    {
-      key: 3,
-      userName: "Anjali Verma",
-      program: "MBA Preparation",
-      status: "Completed",
-      completedDate: "2026-01-10",
-    },
-    {
-      key: 4,
-      userName: "Vikram Singh",
-      program: "Career Assessment",
-      status: "Not Started",
-      completedDate: "-",
-    },
-  ]);
+  },
+  {
+    key: 4,
+    userName: "Vikram Singh",
+    email: "vikram.singh@email.com",
+    program: "Career Assessment",
+    status: "Not Started",
+    completedDate: "-",
+    approvedBy: null,
+  },
+]);
 
-  // ---------------- STATES ----------------
+
+  /* ================= STATES ================= */
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState(null);
 
-  // ---------------- APPROVE ----------------
+  /* ================= APPROVE ================= */
   const handleApproveExam = (key) => {
     confirm({
       title: "Approve Exam?",
@@ -74,12 +85,11 @@ const ExamManagements = () => {
       content:
         "Are you sure you want to approve this exam? The student's report will be unlocked.",
       centered: true,
-      mask: true,
-      closable: true,
-      maskClosable: true,
       okText: "Yes, Approve",
       okType: "primary",
-      okButtonProps: { style: { background: "#52c41a", borderColor: "#52c41a" } },
+      okButtonProps: {
+        style: { background: "#52c41a", borderColor: "#52c41a" },
+      },
       cancelText: "Cancel",
       onOk() {
         setExamRecords((prev) =>
@@ -89,6 +99,10 @@ const ExamManagements = () => {
                   ...item,
                   status: "Completed",
                   completedDate: new Date().toISOString().split("T")[0],
+                  approvedBy: {
+                    name: "Admin John", // 🔑 replace with logged-in user
+                    role: "Admin",
+                  },
                 }
               : item
           )
@@ -98,7 +112,7 @@ const ExamManagements = () => {
     });
   };
 
-  // ---------------- REJECT (WITH CONFIRM MODAL) ----------------
+  /* ================= REJECT ================= */
   const handleRejectExam = (key) => {
     confirm({
       title: "Reject Exam?",
@@ -106,16 +120,19 @@ const ExamManagements = () => {
       content:
         "Are you sure you want to reject this exam? This action cannot be undone.",
       centered: true,
-      mask: true,
-      closable: true,
-      maskClosable: true,
       okText: "Yes, Reject",
       okType: "danger",
       cancelText: "Cancel",
       onOk() {
         setExamRecords((prev) =>
           prev.map((item) =>
-            item.key === key ? { ...item, status: "Rejected" } : item
+            item.key === key
+              ? {
+                  ...item,
+                  status: "Rejected",
+                  approvedBy: null,
+                }
+              : item
           )
         );
         message.warning("Exam rejected successfully.");
@@ -123,28 +140,12 @@ const ExamManagements = () => {
     });
   };
 
-  // ---------------- SEND REMINDER ----------------
-  const handleSendReminder = (key) => {
-    confirm({
-      title: "Send Reminder?",
-      icon: <BellOutlined style={{ color: "#1E40AF" }} />,
-      content:
-        "Are you sure you want to send a reminder to the student about this exam?",
-      centered: true,
-      mask: true,
-      closable: true,
-      maskClosable: true,
-      okText: "Yes, Send",
-      okType: "primary",
-      okButtonProps: { style: { background: "#1E40AF", borderColor: "#1E40AF" } },
-      cancelText: "Cancel",
-      onOk() {
-        message.success("Reminder sent successfully to the student!");
-      },
-    });
+  /* ================= REMINDER ================= */
+  const handleSendReminder = () => {
+    message.success("Reminder sent successfully to the student!");
   };
 
-  // ---------------- FILTER LOGIC ----------------
+  /* ================= FILTER ================= */
   const filteredData = examRecords.filter((item) => {
     const search = searchText.toLowerCase();
 
@@ -159,7 +160,7 @@ const ExamManagements = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // ---------------- STATUS TAG ----------------
+  /* ================= STATUS TAG ================= */
   const renderStatus = (status) => {
     switch (status) {
       case "Completed":
@@ -171,7 +172,7 @@ const ExamManagements = () => {
       case "Awaiting Approval":
         return (
           <Tag icon={<ExclamationCircleOutlined />} color="warning">
-            Awaiting Approval
+            Awaiting <br></br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Approval
           </Tag>
         );
       case "In Progress":
@@ -187,26 +188,29 @@ const ExamManagements = () => {
           </Tag>
         );
       default:
-        return (
-          <Tag icon={<MinusCircleOutlined />} color="default">
-            Not Started
-          </Tag>
-        );
+        return <Tag>Not Started</Tag>;
     }
   };
 
-  // ---------------- TABLE COLUMNS ----------------
+  /* ================= TABLE COLUMNS ================= */
   const columns = [
     {
       title: "Sr. No",
-      key: "srno",
       render: (_, __, index) => index + 1,
     },
     {
-      title: "User Name",
-      dataIndex: "userName",
-      render: (text) => <Text strong>{text}</Text>,
-    },
+  title: "User Name",
+  dataIndex: "userName",
+  render: (_, record) => (
+    <Space direction="vertical" size={0}>
+      <Text strong>{record.userName}</Text>
+      <Text type="colorTextSecondary" >
+        {record.email}
+      </Text>
+    </Space>
+  ),
+},
+
     {
       title: "Program",
       dataIndex: "program",
@@ -222,17 +226,31 @@ const ExamManagements = () => {
       render: (date) => <Text type="colorTextSecondary">{date}</Text>,
     },
     {
+      title: "Approved By",
+      dataIndex: "approvedBy",
+      render: (approvedBy) =>
+        approvedBy ? (
+          <Space direction="vertical" size={0}>
+            <Text strong>{approvedBy.name}</Text>
+            <Tag color="blue">{approvedBy.role}</Tag>
+          </Space>
+        ) : (
+          <Text type="colorTextSecondary">-</Text>
+        ),
+    },
+    {
       title: "Actions",
       render: (_, record) => (
         <Space>
-          {(record.status === "Awaiting Approval" || record.status === "In Progress") && (
+          {(record.status === "Awaiting Approval" ||
+            record.status === "In Progress") && (
             <>
               <Button
                 type="primary"
                 icon={<UnlockOutlined />}
                 onClick={() => handleApproveExam(record.key)}
               >
-                Approve Exam
+                Approve
               </Button>
 
               <Button
@@ -243,6 +261,15 @@ const ExamManagements = () => {
                 Reject
               </Button>
             </>
+          )}
+
+          {record.status === "Not Started" && (
+            <Button
+              icon={<BellOutlined />}
+              onClick={handleSendReminder}
+            >
+              Send Reminder
+            </Button>
           )}
 
           {record.status === "Completed" && (
@@ -256,22 +283,12 @@ const ExamManagements = () => {
               Rejected
             </Button>
           )}
-
-          {record.status === "Not Started" && (
-            <Button
-              type="default"
-              icon={<BellOutlined />}
-              onClick={() => handleSendReminder(record.key)}
-            >
-              Send Reminder
-            </Button>
-          )}
         </Space>
       ),
     },
   ];
 
-  // ---------------- JSX ----------------
+  /* ================= JSX ================= */
   return (
     <div style={{ padding: 16 }}>
       <Title level={3}>User Request List</Title>
@@ -282,9 +299,7 @@ const ExamManagements = () => {
           boxShadow: adminTheme.token.boxShadow,
         }}
       >
-        <Title level={4} style={{ marginBottom: 20 }}>
-          Records ({filteredData.length})
-        </Title>
+        <Title level={4}>Records ({filteredData.length})</Title>
 
         {/* SEARCH + FILTER */}
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
@@ -292,19 +307,19 @@ const ExamManagements = () => {
             <Input
               prefix={<SearchOutlined />}
               placeholder="Search by user or program"
+              allowClear
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              allowClear
             />
           </Col>
 
           <Col xs={24} md={6}>
             <Select
               placeholder="Filter by Status"
-              value={statusFilter}
-              onChange={setStatusFilter}
               allowClear
               style={{ width: "100%" }}
+              value={statusFilter}
+              onChange={setStatusFilter}
             >
               <Option value="Completed">Approved</Option>
               <Option value="Awaiting Approval">Awaiting Approval</Option>
@@ -319,11 +334,8 @@ const ExamManagements = () => {
         <Table
           columns={columns}
           dataSource={filteredData}
+          pagination={{ pageSize: 5 }}
           scroll={{ x: "max-content" }}
-          pagination={{
-            pageSize: 5,
-            showSizeChanger: false,
-          }}
         />
       </Card>
     </div>

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.0.104:8000/api",
+  baseURL: "http://192.168.0.112:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -45,10 +45,10 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (
       error.response?.status === 401 &&
-      !window.location.pathname.includes("/admin-login")
+      !window.location.pathname.includes("/")
     ) {
       localStorage.clear();
-      window.location.replace("/admin-login");
+      window.location.replace("/");
     }
 
     return Promise.reject(error);

@@ -50,13 +50,13 @@ const App = () => {
 
           {/* =================== STUDENT AUTH ROUTES ===================== */}
         <Route path="/register" element={<StudentRegister />} />
-        <Route path="/" element={<StudentLogin />} />
-        <Route path="/forgot_password" element={<Forgot_Password />} /> 
-        <Route path="/reset_password" element={<Reset_Password />} /> 
+        {/* <Route path="/" element={<StudentLogin />} /> */}
+        {/* <Route path="/forgot_password" element={<Forgot_Password />} /> 
+        <Route path="/reset_password" element={<Reset_Password />} />  */}
 
 
           {/* =================== ADMIN AUTH ROUTES ===================== */}
-        <Route path="/admin-login" element={<AdminLogin />} /> 
+        <Route path="/" element={<AdminLogin />} /> 
         <Route path="/forgotpassword" element={<ForgotPassword />} /> 
         <Route path="/resetpassword" element={<ResetPassword />} /> 
         

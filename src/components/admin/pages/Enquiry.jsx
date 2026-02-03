@@ -117,29 +117,31 @@ const Enquiry = () => {
     render: (_, __, index) => (currentPage - 1) * pageSize + index + 1, // Page-aware serial number
     responsive: ["xs", "sm", "md", "lg", "xl"],
   },
+{
+  title: "User Name",
+  dataIndex: "name",
+  key: "name",
+  render: (text, record) => (
+    <>
+      <Text strong style={{ color: adminTheme.token.colorTextBase }}>
+        {text}
+      </Text>
+      <br />
+      <Text type="colorTextSecondary">{record.email}</Text>
+    </>
+  ),
+},
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text) => (
-        <Text strong style={{ color: adminTheme.token.colorTextBase }}>
-          {text}
-        </Text>
-      ),
-    },
-    {
-      title: "Contact",
+      title: "Mobile Number",
       key: "contact",
       render: (_, record) => (
         <div>
           <Text>{record.phone}</Text>
-          <br />
-          <Text>{record.email}</Text>
-        </div>
+          </div>
       ),
     },
     {
-      title: "Program",
+      title: "Program of Interest",
       dataIndex: "program",
       key: "program",
     },

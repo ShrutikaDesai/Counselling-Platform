@@ -1,240 +1,264 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  Card,
   Form,
   Input,
   Button,
-  Select,
+  Card,
   Typography,
-  Avatar,
-  Divider,
-  Space,
   Row,
   Col,
+  Divider,
   ConfigProvider,
-  Grid,
   message,
 } from "antd";
 import {
-  UserOutlined,
-  LockOutlined,
   MailOutlined,
+  LockOutlined,
   SafetyOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import adminTheme from "../theme/adminTheme";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../adminSlices/authSlice";
 
-
 const { Title, Text } = Typography;
-const { Option } = Select;
-const { useBreakpoint } = Grid;
 
 const AdminLogin = () => {
-  const screens = useBreakpoint();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [form] = Form.useForm();
-  const [selectedRole, setSelectedRole] = React.useState(null);
-  const { loading, error, success, successMessage, user } = useSelector((state) => state.auth);
 
-useEffect(() => {
-  if (success) {
-    message.success(successMessage);
-    navigate("/admin/dashboard");
-  }
-}, [success, successMessage, navigate]);
+  const { loading, error, success, successMessage, user } = useSelector(
+    (state) => state.auth
+  );
 
+  /* ========= SUCCESS ========= */
+  useEffect(() => {
+    if (success && user) {
+      message.success(successMessage);
 
-useEffect(() => {
-  if (error) {
-    message.error(error);
-  }
-}, [error]);
+      // 🔑 ROLE-BASED REDIRECT (backend driven)
+      switch (user.role) {
+        case "admin":
+        case "superadmin":
+        case "employee":
+          navigate("/admin/dashboard");
+          break;
 
+        case "lead_counsellor":
+        case "counsellor":
+          navigate("/admin/dashboard");
+          break;
 
-  const onFinish = (values) => {
-    const payload = { ...values };
+        case "student":
+          navigate("/student/dashboard");
+          break;
 
-    // When role is 'counsellor', put the selected counsellor type into the `role` field
-    // so backend receives role: 'lead' or 'normal' (instead of role: 'counsellor' + counsellor_type)
-    if (values.role === "counsellor" && values.counsellor_type) {
-      payload.role = values.counsellor_type;
-      delete payload.counsellor_type;
+        default:
+          navigate("/student/dashboard");
+      }
     }
+  }, [success, successMessage, user, navigate]);
 
-    console.log("Login Payload:", payload);
-    dispatch(loginUser(payload));
+  /* ========= ERROR ========= */
+  useEffect(() => {
+    if (error) {
+      message.error(error);
+    }
+  }, [error]);
+
+  /* ========= SUBMIT ========= */
+  const onFinish = (values) => {
+    console.log("Login Payload:", values);
+    dispatch(loginUser(values)); // only email + password
   };
 
   return (
     <ConfigProvider theme={adminTheme}>
-      <Row
-        align="middle"
-        justify="center"
+      <div
         style={{
           minHeight: "100vh",
-          padding: screens.xs ? "16px" : "0",
-          background: `linear-gradient(135deg, ${adminTheme.token.colorPrimary}20, ${adminTheme.token.colorInfo}30)`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 16,
+          background:
+            "linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%)",
         }}
       >
-        <Col xs={24} sm={22} md={16} lg={10} xl={8}>
-          <Card
-            bordered={false}
-            style={{
-              width: "100%",
-              borderRadius: 24,
-              boxShadow: adminTheme.token.boxShadow,
-              background: "rgba(255,255,255,0.96)",
-              padding: screens.xs ? "8px" : "16px",
-            }}
-          >
-            {/* ================= HEADER ================= */}
-            <Space
-              direction="vertical"
-              align="center"
-              size={10}
-              style={{ width: "100%", marginBottom: 12 }}
+        <Card
+          bordered={false}
+          style={{
+            width: "100%",
+            maxWidth: 920,
+            borderRadius: 24,
+            overflow: "hidden",
+            background:
+              "linear-gradient(135deg, #1E40AF, #6b85db)",
+            boxShadow:
+              "0 30px 70px rgba(30, 64, 175, 0.35)",
+          }}
+        >
+          <Row>
+            {/* ===== LEFT BRAND PANEL ===== */}
+            <Col
+              xs={0}
+              md={10}
+              style={{
+                color: "#FFFFFF",
+                padding: "70px 40px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
             >
-              <Avatar
-                size={screens.xs ? 72 : 96}
-                icon={<UserOutlined />}
-                style={{
-                  backgroundColor: adminTheme.token.colorPrimary,
-                }}
-              />
-
               <Title
-                level={screens.xs ? 3 : 2}
-                style={{ marginBottom: 0, textAlign: "center" }}
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 34,
+                  fontWeight: 700,
+                }}
               >
-                Login Portal
+                Welcome Back 👋
               </Title>
 
               <Text
                 style={{
-                  fontSize: screens.xs ? 16 : 20,
-                  fontWeight: 700,
-                  color: adminTheme.token.colorPrimary,
-                  textAlign: "center",
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: 16,
+                  marginTop: 12,
+                  lineHeight: 1.6,
                 }}
               >
-                Admin / Employee / Counsellor
+                Login to continue your learning, counselling, or management
+                journey.
               </Text>
-            </Space>
 
-            <Divider style={{ margin: "20px 0" }} />
+              <div style={{ marginTop: 40, paddingLeft: 10 }}>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ Student Dashboard
+                </Text>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ Counsellor Panel
+                </Text>
+                <Text style={{ color: "#E0E7FF", display: "block" }}>
+                  ✔ Admin Management
+                </Text>
+              </div>
+            </Col>
 
-            {/* ================= FORM ================= */}
-            <Form form={form} layout="vertical" onFinish={onFinish}>
-              <Form.Item
-                label={<Text strong>Email Address</Text>}
-                name="email"
-                rules={[
-                  { required: true, message: "Email is required" },
-                  { type: "email", message: "Enter a valid email" },
-                ]}
+            {/* ===== RIGHT FORM PANEL ===== */}
+            <Col
+              xs={24}
+              md={14}
+              style={{
+                padding: "48px 36px",
+                background: "rgba(255,255,255,0.95)",
+                backdropFilter: "blur(10px)",
+                borderRadius: "0 24px 24px 0",
+              }}
+            >
+              <Title level={3} style={{ marginBottom: 4 }}>
+                Login
+              </Title>
+
+              <Text type="colorTextSecondary">
+             Enter your credentials to access your account
+              </Text>
+
+              <Form
+                layout="vertical"
+                onFinish={onFinish}
+                style={{ marginTop: 28 }}
               >
-                <Input
-                  size="large"
-                  prefix={<MailOutlined />}
-                  allowClear
-                  style={{ height: 48 }}
-                />
-              </Form.Item>
+                {/* EMAIL */}
+                <Form.Item
+                  label="Email Address"
+                  name="email"
+                  rules={[
+                    { required: true, message: "Email is required" },
+                    { type: "email", message: "Enter a valid email" },
+                  ]}
+                >
+                  <Input
+                    prefix={<MailOutlined />}
+                    size="large"
+                    placeholder="you@example.com"
+                    style={{ borderRadius: 12 }}
+                  />
+                </Form.Item>
 
-              <Form.Item
-                label={<Text strong>Password</Text>}
-                name="password"
-                rules={[
-                  { required: true, message: "Password is required" },
-                  { min: 8, message: "Minimum 8 characters required" },
-                ]}
-              >
-                <Input.Password
-                  size="large"
-                  prefix={<LockOutlined />}
-                  placeholder="••••••••"
-                  style={{ height: 48 }}
-                />
-              </Form.Item>
+                {/* PASSWORD */}
+                <Form.Item
+                  label="Password"
+                  name="password"
+                  rules={[
+                    { required: true, message: "Password is required" },
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="••••••••"
+                    size="large"
+                    style={{ borderRadius: 12 }}
+                  />
+                </Form.Item>
 
-              <Form.Item
-                label={<Text strong>Login As</Text>}
-                name="role"
-                rules={[
-                  { required: true, message: "Please select your role" },
-                ]}
-              >
-                <Select
-                  size="large"
-                  placeholder="Select your role"
-                  onChange={(value) => {
-                    setSelectedRole(value);
-                    // Clear counsellor type if role changed away
-                    if (value !== "counsellor") {
-                      form.resetFields(["counsellor_type"]);
-                    }
+                {/* FORGOT */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginBottom: 20,
                   }}
                 >
-                  <Option value="admin">Admin</Option>
-                  <Option value="superadmin">Superadmin</Option>
-                  <Option value="employee">Employee</Option>
-                  <Option value="counsellor">Counsellor</Option>
-                </Select>
-              </Form.Item>
+                  <Text
+                    type="primary"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate("/forgotpassword")}
+                  >
+                    Forgot Password?
+                  </Text>
+                </div>
 
-              {/* Show this only when counsellor is selected */}
-              {selectedRole === "counsellor" && (
-                <Form.Item
-                  label={<Text strong>Counsellor Type</Text>}
-                  name="counsellor_type"
-                  rules={[{ required: true, message: "Please select counsellor type" }]}
-                >
-                  <Select size="large" placeholder="Select counsellor type">
-                    <Option value="lead_counsellor">Lead Counsellor</Option>
-                    <Option value="counsellor">Counsellor</Option>
-                  </Select>
-                </Form.Item>
-              )}
-
-              <Form.Item style={{ marginTop: 28 }}>
+                {/* SUBMIT */}
                 <Button
                   type="primary"
                   htmlType="submit"
+                  size="large"
                   block
                   loading={loading}
                   icon={<SafetyOutlined />}
                   style={{
-                    height: 52,
-                    fontWeight: 600,
+                    height: 50,
+                    borderRadius: 30,
                     fontSize: 16,
-                    borderRadius: 10,
+                    fontWeight: 600,
                   }}
                 >
                   Login
                 </Button>
-              </Form.Item>
 
-              {/* ================= FOOTER ================= */}
-              <Row justify="end">
-                <Text
-                  style={{
-                    color: adminTheme.token.colorPrimary,
-                    cursor: "pointer",
-                    fontSize: 14,
-                    fontWeight: 500,
-                  }}
-                  onClick={() => navigate("/forgotpassword")}
-                >
-                  Forgot Password?
+                <Divider style={{ margin: "28px 0" }} />
+                
+                                <Text style={{ textAlign: "center", display: "block" }}>
+                                  Don’t have an student account?{" "}
+                                  <Text
+                                    type="primary"
+                                    style={{
+                                      cursor: "pointer",
+                                        color: "#1890ff",
+                                      textDecoration: "underline",
+                                    }}
+                                    onClick={() => navigate("/register")}
+                                  >
+                                    Register
+                                  </Text>
                 </Text>
-              </Row>
-            </Form>
-          </Card>
-        </Col>
-      </Row>
+              </Form>
+            </Col>
+          </Row>
+        </Card>
+      </div>
     </ConfigProvider>
   );
 };
